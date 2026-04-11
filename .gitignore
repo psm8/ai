@@ -1,0 +1,17 @@
+# Ignore everything by default.
+# NOTE: Comment out this line temporarily when opening the project in an IDE
+# (IntelliJ IDEA, VS Code) so it can index the worktree directories.
+# Restore it afterwards to keep worktrees out of the wrapper repo's Git view.
+/*
+
+# Except the essential setup files and tooling directories
+!README.md
+!AGENTS.md
+!agents/
+!docs/
+!skills/
+!scripts/
+
+# Allow git to descend into .local/, but ignore its contents (except the example template)
+!.local/
+.local/*
