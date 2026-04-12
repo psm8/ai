@@ -27,10 +27,16 @@ $scriptDir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $logFile = Join-Path $scriptDir 'resume_agent.log'
 $defaultPrompt = '/fleet continue with remaining github issues, use ps-solid-agent for implementation and review, verify and document ui changes with screenshots, test frequenty, iterate until everything looks fine, comment in github, when you think the issue is implemented, then commit the changes after each issue finished'
 $cooldownFallback = [TimeSpan]::FromHours(2)
-$runningThreshold = [TimeSpan]::FromMinutes(2)
+$activeHeartbeatThreshold = [TimeSpan]::FromMinutes(15)
+$activeChildProcessThreshold = [TimeSpan]::FromMinutes(30)
+$eventTailLineCount = 400
+$stalledShutdownTimeout = [TimeSpan]::FromSeconds(20)
+$processPollIntervalMs = 500
 $excludedTitlePrefixes = @('PRD:', 'Spec:', 'RFC:')
 $excludedLabels = @('prd', 'spec', 'design-doc')
 $terminalEventTypes = @('session.end', 'session.ended')
+$ignoredInfrastructureProcesses = @('conhost', 'openconsole', 'windowsterminal', 'cmd', 'pwsh', 'powershell')
+$ignoredBackgroundProcesses = @('emulator', 'qemu-system-x86_64', 'netsimd', 'crashpad_handler')
 $sessionHome = if ([string]::IsNullOrWhiteSpace($env:USERPROFILE)) {
     [Environment]::GetFolderPath('UserProfile')
 } else {
@@ -219,14 +225,28 @@ function Convert-LineToJsonObject {
 }
 
 function Read-SessionEvents {
-    param([string]$EventsFilePath)
+    param(
+        [string]$EventsFilePath,
+        [int]$TailCount = $eventTailLineCount
+    )
 
     $events = @()
     if (-not (Test-Path -LiteralPath $EventsFilePath)) {
         return $events
     }
 
-    foreach ($line in Get-Content -LiteralPath $EventsFilePath -ErrorAction SilentlyContinue) {
+    $lines = @()
+    try {
+        $lines = @(Get-Content -LiteralPath $EventsFilePath -Tail $TailCount -ErrorAction Stop)
+    } catch {
+        try {
+            $lines = @(Get-Content -LiteralPath $EventsFilePath -ErrorAction SilentlyContinue | Select-Object -Last $TailCount)
+        } catch {
+            return $events
+        }
+    }
+
+    foreach ($line in $lines) {
         if ([string]::IsNullOrWhiteSpace($line)) {
             continue
         }
@@ -245,14 +265,41 @@ function Read-SessionEvents {
             }
         }
 
+        $eventType = $null
+        if ($eventObject.PSObject.Properties.Name -contains 'type') {
+            $eventType = [string]$eventObject.type
+        }
+
+        $eventData = $null
+        if ($eventObject.PSObject.Properties.Name -contains 'data') {
+            $eventData = $eventObject.data
+        }
+
         $events += [pscustomobject]@{
-            Type = if ($eventObject.PSObject.Properties.Name -contains 'type') { [string]$eventObject.type } else { $null }
+            Type = $eventType
             Timestamp = $timestamp
-            Data = if ($eventObject.PSObject.Properties.Name -contains 'data') { $eventObject.data } else { $null }
+            Data = $eventData
         }
     }
 
     return $events
+}
+
+function Get-CooldownTimestampFromMessage {
+    param([string]$Message)
+
+    if ([string]::IsNullOrWhiteSpace($Message)) {
+        return $null
+    }
+
+    foreach ($match in [regex]::Matches($Message, '(?<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2}))')) {
+        try {
+            return [DateTimeOffset]::Parse($match.Groups['timestamp'].Value)
+        } catch {
+        }
+    }
+
+    return $null
 }
 
 function Get-CooldownDurationFromMessage {
@@ -308,15 +355,47 @@ function Get-RateLimitStatus {
     }
 
     $latest = $rateLimitEvents[0]
-    $message = if ($latest.Data.PSObject.Properties.Name -contains 'message') { [string]$latest.Data.message } else { $null }
-    $duration = Get-CooldownDurationFromMessage -Message $message
-    if ($null -eq $duration) {
-        $duration = $cooldownFallback
+    $supersedingEvent = $Events |
+        Where-Object {
+            $null -ne $_.Timestamp -and
+            $_.Timestamp -gt $latest.Timestamp -and
+            ($_.Type -ne 'session.error' -or $null -eq $_.Data -or $_.Data.PSObject.Properties.Name -notcontains 'errorType' -or [string]$_.Data.errorType -ne 'rate_limit')
+        } |
+        Sort-Object -Property Timestamp -Descending |
+        Select-Object -First 1
+
+    if ($null -ne $supersedingEvent) {
+        return [pscustomobject]@{
+            IsActive = $false
+            CooldownUntil = $null
+            Remaining = [TimeSpan]::Zero
+            Message = $null
+            EventTimestamp = $latest.Timestamp
+            Source = 'superseded'
+        }
     }
 
-    $cooldownUntil = $latest.Timestamp.Add($duration)
+    $message = $null
+    if ($latest.Data.PSObject.Properties.Name -contains 'message') {
+        $message = [string]$latest.Data.message
+    }
+    $cooldownUntil = Get-CooldownTimestampFromMessage -Message $message
+    $source = 'message-duration'
+    if ($null -eq $cooldownUntil) {
+        $duration = Get-CooldownDurationFromMessage -Message $message
+        if ($null -eq $duration) {
+            $duration = $cooldownFallback
+            $source = 'fallback-duration'
+        }
+
+        $cooldownUntil = $latest.Timestamp.Add($duration)
+    }
+
     $now = [DateTimeOffset]::UtcNow
-    $remaining = if ($cooldownUntil -gt $now) { $cooldownUntil - $now } else { [TimeSpan]::Zero }
+    $remaining = [TimeSpan]::Zero
+    if ($cooldownUntil -gt $now) {
+        $remaining = $cooldownUntil - $now
+    }
 
     return [pscustomobject]@{
         IsActive = $cooldownUntil -gt $now
@@ -324,6 +403,7 @@ function Get-RateLimitStatus {
         Remaining = $remaining
         Message = $message
         EventTimestamp = $latest.Timestamp
+        Source = $source
     }
 }
 
@@ -364,10 +444,263 @@ function Test-ProcessIdRunning {
     }
 }
 
-function Get-SessionActivityStatus {
+function Get-NormalizedProcessName {
+    param([string]$Name)
+
+    if ([string]::IsNullOrWhiteSpace($Name)) {
+        return $null
+    }
+
+    return ([System.IO.Path]::GetFileNameWithoutExtension($Name)).ToLowerInvariant()
+}
+
+function Get-DescendantProcesses {
+    param([int]$RootProcessId)
+
+    if ($RootProcessId -le 0) {
+        return @()
+    }
+
+    $allProcesses = @()
+    try {
+        $allProcesses = @(Get-CimInstance Win32_Process -ErrorAction Stop)
+    } catch {
+        return @()
+    }
+
+    $childrenByParent = @{}
+    foreach ($process in $allProcesses) {
+        $parentId = [int]$process.ParentProcessId
+        if (-not $childrenByParent.ContainsKey($parentId)) {
+            $childrenByParent[$parentId] = New-Object System.Collections.ArrayList
+        }
+
+        [void]$childrenByParent[$parentId].Add($process)
+    }
+
+    $descendants = New-Object System.Collections.Generic.List[object]
+    $stack = New-Object System.Collections.Stack
+    if ($childrenByParent.ContainsKey($RootProcessId)) {
+        foreach ($child in $childrenByParent[$RootProcessId]) {
+            [void]$stack.Push($child)
+        }
+    }
+
+    while ($stack.Count -gt 0) {
+        $current = $stack.Pop()
+        [void]$descendants.Add($current)
+
+        $currentId = [int]$current.ProcessId
+        if ($childrenByParent.ContainsKey($currentId)) {
+            foreach ($child in $childrenByParent[$currentId]) {
+                [void]$stack.Push($child)
+            }
+        }
+    }
+
+    return $descendants.ToArray()
+}
+
+function Get-ProcessTreeStatus {
+    param([int]$RootProcessId)
+
+    $descendants = @(Get-DescendantProcesses -RootProcessId $RootProcessId)
+    $recentChildCutoff = [DateTimeOffset]::UtcNow.Subtract($activeChildProcessThreshold)
+    $activeChildProcesses = @(
+        $descendants |
+            Where-Object {
+                $normalizedName = Get-NormalizedProcessName -Name $_.Name
+                if ([string]::IsNullOrWhiteSpace($normalizedName)) {
+                    return $false
+                }
+                if ($ignoredInfrastructureProcesses -contains $normalizedName -or $ignoredBackgroundProcesses -contains $normalizedName) {
+                    return $false
+                }
+
+                if ($_.PSObject.Properties.Name -notcontains 'CreationDate' -or [string]::IsNullOrWhiteSpace([string]$_.CreationDate)) {
+                    return $true
+                }
+
+                try {
+                    $creationTime = [DateTimeOffset][System.Management.ManagementDateTimeConverter]::ToDateTime([string]$_.CreationDate)
+                    return $creationTime -ge $recentChildCutoff
+                } catch {
+                    return $true
+                }
+            }
+    )
+
+    return [pscustomobject]@{
+        RootProcessId = $RootProcessId
+        Descendants = $descendants
+        ActiveChildProcesses = $activeChildProcesses
+        HasActiveChildWork = $activeChildProcesses.Count -gt 0
+    }
+}
+
+function Wait-ForProcessExit {
+    param(
+        [int]$ProcessId,
+        [TimeSpan]$Timeout
+    )
+
+    $deadline = [DateTimeOffset]::UtcNow.Add($Timeout)
+    while ([DateTimeOffset]::UtcNow -lt $deadline) {
+        if (-not (Test-ProcessIdRunning -ProcessId $ProcessId)) {
+            return $true
+        }
+
+        [System.Threading.Thread]::Sleep($processPollIntervalMs)
+    }
+
+    return -not (Test-ProcessIdRunning -ProcessId $ProcessId)
+}
+
+function Stop-ProcessTree {
+    param([int]$RootProcessId)
+
+    $processTree = Get-ProcessTreeStatus -RootProcessId $RootProcessId
+    foreach ($descendant in @($processTree.Descendants | Sort-Object -Property ProcessId -Descending)) {
+        try {
+            Stop-Process -Id ([int]$descendant.ProcessId) -Force -ErrorAction Stop
+        } catch {
+        }
+    }
+
+    try {
+        Stop-Process -Id $RootProcessId -Force -ErrorAction Stop
+    } catch {
+        if (Test-ProcessIdRunning -ProcessId $RootProcessId) {
+            throw
+        }
+    }
+
+    return Wait-ForProcessExit -ProcessId $RootProcessId -Timeout $stalledShutdownTimeout
+}
+
+function Get-SessionHeartbeatStatus {
     param(
         [string]$SessionFolder,
+        [string]$EventsFilePath,
         [object[]]$Events
+    )
+
+    $sources = New-Object System.Collections.Generic.List[object]
+
+    foreach ($path in @(
+        $EventsFilePath,
+        (Join-Path $SessionFolder 'session.db'),
+        (Join-Path $SessionFolder 'plan.md'),
+        (Join-Path $SessionFolder 'checkpoints\index.md'),
+        (Join-Path $SessionFolder 'rewind-snapshots\index.json')
+    )) {
+        if (-not [string]::IsNullOrWhiteSpace($path) -and (Test-Path -LiteralPath $path)) {
+            $item = Get-Item -LiteralPath $path -ErrorAction SilentlyContinue
+            if ($null -ne $item) {
+                [void]$sources.Add([pscustomobject]@{
+                    Source = $path
+                    Timestamp = [DateTimeOffset]$item.LastWriteTimeUtc
+                })
+            }
+        }
+    }
+
+    $checkpointsPath = Join-Path $SessionFolder 'checkpoints'
+    if (Test-Path -LiteralPath $checkpointsPath) {
+        $latestCheckpoint = Get-ChildItem -LiteralPath $checkpointsPath -Filter '*.md' -File -ErrorAction SilentlyContinue |
+            Sort-Object -Property LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+        if ($null -ne $latestCheckpoint) {
+            [void]$sources.Add([pscustomobject]@{
+                Source = $latestCheckpoint.FullName
+                Timestamp = [DateTimeOffset]$latestCheckpoint.LastWriteTimeUtc
+            })
+        }
+    }
+
+    $latestEvent = $Events |
+        Where-Object { $null -ne $_.Timestamp } |
+        Sort-Object -Property Timestamp -Descending |
+        Select-Object -First 1
+    if ($null -ne $latestEvent) {
+        [void]$sources.Add([pscustomobject]@{
+            Source = 'events.jsonl:last-event'
+            Timestamp = $latestEvent.Timestamp
+        })
+    }
+
+    $latestSource = $sources |
+        Sort-Object -Property Timestamp -Descending |
+        Select-Object -First 1
+    $age = [TimeSpan]::MaxValue
+    if ($null -ne $latestSource) {
+        $age = [DateTimeOffset]::UtcNow - $latestSource.Timestamp
+    }
+
+    $latestHeartbeatSource = $null
+    $latestHeartbeatTimestamp = $null
+    if ($null -ne $latestSource) {
+        $latestHeartbeatSource = [string]$latestSource.Source
+        $latestHeartbeatTimestamp = $latestSource.Timestamp
+    }
+
+    return [pscustomobject]@{
+        Sources = @($sources.ToArray())
+        LatestSource = $latestHeartbeatSource
+        LatestTimestamp = $latestHeartbeatTimestamp
+        Age = $age
+        IsRecent = ($null -ne $latestSource) -and ($age -le $activeHeartbeatThreshold)
+    }
+}
+
+function Format-LockEntries {
+    param([object[]]$Entries)
+
+    if ($null -eq $Entries -or $Entries.Count -eq 0) {
+        return 'none'
+    }
+
+    return (@(
+        $Entries |
+            ForEach-Object {
+                if ($null -ne $_.ProcessId) {
+                    '{0} (pid {1})' -f $_.File.Name, $_.ProcessId
+                } else {
+                    $_.File.Name
+                }
+            }
+    ) -join '; ')
+}
+
+function Remove-SessionLockEntries {
+    param([object[]]$Entries)
+
+    $removed = New-Object System.Collections.Generic.List[string]
+    $failed = New-Object System.Collections.Generic.List[string]
+    foreach ($entry in @($Entries)) {
+        if ($null -eq $entry -or $null -eq $entry.File) {
+            continue
+        }
+
+        try {
+            Remove-Item -LiteralPath $entry.File.FullName -Force -ErrorAction Stop
+            [void]$removed.Add($entry.File.Name)
+        } catch {
+            [void]$failed.Add($entry.File.Name)
+        }
+    }
+
+    return [pscustomobject]@{
+        Removed = $removed.ToArray()
+        Failed = $failed.ToArray()
+    }
+}
+
+function Get-SessionExecutionState {
+    param(
+        [string]$SessionFolder,
+        [object[]]$Events,
+        [string]$EventsFilePath
     )
 
     $lockFiles = @()
@@ -408,19 +741,55 @@ function Get-SessionActivityStatus {
         Sort-Object -Property Timestamp -Descending |
         Select-Object -First 1
 
-    $hasRecentActivity = $false
-    if ($null -ne $latestEvent) {
-        $hasRecentActivity = $latestEvent.Timestamp -ge [DateTimeOffset]::UtcNow.Subtract($runningThreshold)
+    $heartbeatStatus = Get-SessionHeartbeatStatus -SessionFolder $SessionFolder -EventsFilePath $EventsFilePath -Events $Events
+    $processTrees = @()
+    foreach ($activeLock in $activeLocks) {
+        $processTrees += @(Get-ProcessTreeStatus -RootProcessId $activeLock.ProcessId)
+    }
+
+    $activeChildProcesses = @()
+    foreach ($processTree in $processTrees) {
+        if ($null -ne $processTree.ActiveChildProcesses) {
+            $activeChildProcesses += @($processTree.ActiveChildProcesses)
+        }
+    }
+    $hasActiveChildWork = $activeChildProcesses.Count -gt 0
+
+    $state = 'ready-to-resume'
+    $isBlocking = $false
+    if ($activeLocks.Count -gt 0) {
+        if ($heartbeatStatus.IsRecent -or $hasActiveChildWork) {
+            $state = 'actively-working'
+            $isBlocking = $true
+        } else {
+            $state = 'live-but-stalled'
+        }
+    } elseif ($unknownLocks.Count -gt 0) {
+        if ($heartbeatStatus.IsRecent) {
+            $state = 'unknown-lock-with-recent-heartbeat'
+            $isBlocking = $true
+        } else {
+            $state = 'unknown-lock-but-stale'
+        }
+    } elseif ($heartbeatStatus.IsRecent) {
+        $state = 'recent-heartbeat-no-lock'
+        $isBlocking = $true
+    } elseif ($staleLocks.Count -gt 0) {
+        $state = 'dead-stale-lock'
     }
 
     return [pscustomobject]@{
-        IsRunning = ($activeLocks.Count -gt 0) -or ($unknownLocks.Count -gt 0) -or $hasRecentActivity
+        State = $state
+        IsBlocking = $isBlocking
         LockFiles = $lockFiles
         ActiveLocks = $activeLocks
         StaleLocks = $staleLocks
         UnknownLocks = $unknownLocks
         LatestEvent = $latestEvent
-        HasRecentActivity = $hasRecentActivity
+        HeartbeatStatus = $heartbeatStatus
+        ProcessTrees = $processTrees
+        ActiveChildProcesses = $activeChildProcesses
+        HasActiveChildWork = $hasActiveChildWork
     }
 }
 
@@ -579,46 +948,80 @@ try {
 
     $eventsFile = Join-Path $sessionRoot 'events.jsonl'
     $events = Read-SessionEvents -EventsFilePath $eventsFile
-    $activityStatus = Get-SessionActivityStatus -SessionFolder $sessionRoot -Events $events
-    if ($activityStatus.StaleLocks.Count -gt 0) {
-        $staleLockSummary = @(
-            $activityStatus.StaleLocks |
-                ForEach-Object {
-                    if ($null -ne $_.ProcessId) {
-                        '{0} (pid {1})' -f $_.File.Name, $_.ProcessId
-                    } else {
-                        $_.File.Name
-                    }
-                }
-        ) -join '; '
-        Write-ResumeLog ('Ignoring stale session lock(s): {0}.' -f $staleLockSummary)
+    $rateLimitStatus = Get-RateLimitStatus -Events $events
+    if ($rateLimitStatus.IsActive) {
+        Write-ResumeLog ('Skipped: Copilot rate limit is active until {0} (remaining {1}, source {2}).' -f $rateLimitStatus.CooldownUntil.ToString('o'), (Format-TimeSpan -Duration $rateLimitStatus.Remaining), $rateLimitStatus.Source)
+        exit 0
     }
 
-    if ($activityStatus.IsRunning) {
+    $sessionState = Get-SessionExecutionState -SessionFolder $sessionRoot -Events $events -EventsFilePath $eventsFile
+    if ($null -ne $sessionState.HeartbeatStatus.LatestTimestamp) {
+        Write-ResumeLog ('Session state {0}; latest heartbeat {1} from {2} ({3} ago).' -f $sessionState.State, $sessionState.HeartbeatStatus.LatestTimestamp.ToString('o'), $sessionState.HeartbeatStatus.LatestSource, (Format-TimeSpan -Duration $sessionState.HeartbeatStatus.Age))
+    } else {
+        Write-ResumeLog ('Session state {0}; no heartbeat files were found.' -f $sessionState.State)
+    }
+
+    if ($sessionState.IsBlocking) {
         $reasons = @()
-        if ($activityStatus.ActiveLocks.Count -gt 0) {
+        if ($sessionState.ActiveLocks.Count -gt 0) {
             $reasons += @(
-                $activityStatus.ActiveLocks |
+                $sessionState.ActiveLocks |
                     ForEach-Object { 'live lock {0} (pid {1})' -f $_.File.Name, $_.ProcessId }
             )
         }
-        if ($activityStatus.UnknownLocks.Count -gt 0) {
+        if ($sessionState.UnknownLocks.Count -gt 0) {
             $reasons += @(
-                $activityStatus.UnknownLocks |
+                $sessionState.UnknownLocks |
                     ForEach-Object { 'unvalidated lock {0}' -f $_.File.Name }
             )
         }
-        if ($activityStatus.HasRecentActivity -and $null -ne $activityStatus.LatestEvent) {
-            $reasons += ('recent event {0} at {1}' -f $activityStatus.LatestEvent.Type, $activityStatus.LatestEvent.Timestamp.ToString('o'))
+        if ($sessionState.HasActiveChildWork) {
+            $reasons += ('active child work: {0}' -f ((@($sessionState.ActiveChildProcesses | Select-Object -ExpandProperty Name -Unique) -join ', ')))
+        }
+        if ($null -ne $sessionState.LatestEvent) {
+            $reasons += ('latest event {0} at {1}' -f $sessionState.LatestEvent.Type, $sessionState.LatestEvent.Timestamp.ToString('o'))
         }
         Write-ResumeLog ('Skipped: session appears to be currently running ({0}).' -f ($reasons -join '; '))
         exit 0
     }
 
-    $rateLimitStatus = Get-RateLimitStatus -Events $events
-    if ($rateLimitStatus.IsActive) {
-        Write-ResumeLog ('Skipped: Copilot rate limit is active until {0} (remaining {1}).' -f $rateLimitStatus.CooldownUntil.ToString('o'), (Format-TimeSpan -Duration $rateLimitStatus.Remaining))
-        exit 0
+    if ($sessionState.State -eq 'live-but-stalled') {
+        $stalledSummary = Format-LockEntries -Entries $sessionState.ActiveLocks
+        Write-ResumeLog ('Session appears stalled: live lock(s) without heartbeat for {0}. Attempting recovery for {1}.' -f (Format-TimeSpan -Duration $sessionState.HeartbeatStatus.Age), $stalledSummary)
+
+        foreach ($stalledLock in @($sessionState.ActiveLocks)) {
+            $stopped = Stop-ProcessTree -RootProcessId $stalledLock.ProcessId
+            if (-not $stopped) {
+                Write-ResumeLog ('Recovery failed: Copilot PID {0} did not exit within {1}.' -f $stalledLock.ProcessId, (Format-TimeSpan -Duration $stalledShutdownTimeout))
+                exit 1
+            }
+
+            Write-ResumeLog ('Recovered stalled Copilot PID {0}.' -f $stalledLock.ProcessId)
+        }
+
+        $sessionState = Get-SessionExecutionState -SessionFolder $sessionRoot -Events $events -EventsFilePath $eventsFile
+        if ($sessionState.ActiveLocks.Count -gt 0) {
+            Write-ResumeLog ('Recovery failed: live lock(s) still present after stopping process tree: {0}.' -f (Format-LockEntries -Entries $sessionState.ActiveLocks))
+            exit 1
+        }
+    }
+
+    $locksToRemove = @()
+    if ($sessionState.StaleLocks.Count -gt 0) {
+        $locksToRemove += @($sessionState.StaleLocks)
+    }
+    if ($sessionState.State -eq 'unknown-lock-but-stale') {
+        $locksToRemove += @($sessionState.UnknownLocks)
+    }
+    if ($locksToRemove.Count -gt 0) {
+        $cleanupResult = Remove-SessionLockEntries -Entries $locksToRemove
+        if ($cleanupResult.Removed.Count -gt 0) {
+            Write-ResumeLog ('Removed stale session lock(s): {0}.' -f ($cleanupResult.Removed -join '; '))
+        }
+        if ($cleanupResult.Failed.Count -gt 0) {
+            Write-ResumeLog ('Configuration error: failed to remove stale lock(s): {0}.' -f ($cleanupResult.Failed -join '; '))
+            exit 1
+        }
     }
 
     $resolvedPrompt = Get-ResolvedPrompt -RequestedPrompt $Prompt
@@ -650,15 +1053,15 @@ try {
     $stdoutBuilder = New-Object System.Text.StringBuilder
     $stderrBuilder = New-Object System.Text.StringBuilder
     $stdoutHandler = [System.Diagnostics.DataReceivedEventHandler]{
-        param($sender, $args)
-        if ($null -ne $args.Data) {
-            [void]$stdoutBuilder.AppendLine($args.Data)
+        param($eventSender, $eventArgs)
+        if ($null -ne $eventArgs.Data) {
+            [void]$stdoutBuilder.AppendLine($eventArgs.Data)
         }
     }
     $stderrHandler = [System.Diagnostics.DataReceivedEventHandler]{
-        param($sender, $args)
-        if ($null -ne $args.Data) {
-            [void]$stderrBuilder.AppendLine($args.Data)
+        param($eventSender, $eventArgs)
+        if ($null -ne $eventArgs.Data) {
+            [void]$stderrBuilder.AppendLine($eventArgs.Data)
         }
     }
 
