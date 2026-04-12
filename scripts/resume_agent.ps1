@@ -1032,24 +1032,18 @@ try {
     }
 
     if ($DryRun) {
-        Write-ResumeLog ('Dry run: would start {0} in {1}.' -f $resolvedAgentPath, $repositoryContext.WorkingDirectory)
-        Write-ResumeLog ('Dry run prompt: {0}' -f $resolvedPrompt)
+        Write-ResumeLog ('Dry run: would execute {0} {1} in {2}.' -f $resolvedAgentPath, ($cpaArgs -join ' '), $repositoryContext.WorkingDirectory)
         exit 0
     }
 
     $cpaArgs = @(
-        $resolvedAgentPath,
         '--resume={0}' -f $SessionId,
-        '--prompt={0}' -f [System.Security.SecurityElement]::Escape($resolvedPrompt),
-        '--allow-all-paths',
-        '--allow-all-tools',
-        '--autopilot',
-        '--model=gpt-5.4'
+        '--prompt={0}' -f $resolvedPrompt
     )
 
     $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-    $startInfo.FileName = 'cmd.exe'
-    $startInfo.Arguments = '/c "{0}"' -f ($cpaArgs -join ' ')
+    $startInfo.FileName = $resolvedAgentPath
+    $startInfo.Arguments = $cpaArgs -join ' '
     $startInfo.WorkingDirectory = $repositoryContext.WorkingDirectory
     $startInfo.RedirectStandardOutput = $true
     $startInfo.RedirectStandardError = $true
@@ -1074,7 +1068,7 @@ try {
         }
     }
 
-    Write-ResumeLog ('Launching CPA: {0}' -f ($cpaArgs -join ' '))
+    Write-ResumeLog ('Launching CPA: {0} {1}' -f $resolvedAgentPath, ($cpaArgs -join ' '))
 
     $process.add_OutputDataReceived($stdoutHandler)
     $process.add_ErrorDataReceived($stderrHandler)
