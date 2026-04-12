@@ -1037,11 +1037,20 @@ try {
         exit 0
     }
 
+    $cpaArgs = @(
+        $resolvedAgentPath,
+        '--resume={0}' -f $SessionId,
+        '--prompt={0}' -f [System.Security.SecurityElement]::Escape($resolvedPrompt),
+        '--allow-all-paths',
+        '--allow-all-tools',
+        '--autopilot',
+        '--model=gpt-5.4'
+    )
+
     $startInfo = New-Object System.Diagnostics.ProcessStartInfo
     $startInfo.FileName = 'cmd.exe'
-    $startInfo.Arguments = '/c "{0}"' -f $resolvedAgentPath
+    $startInfo.Arguments = '/c "{0}"' -f ($cpaArgs -join ' ')
     $startInfo.WorkingDirectory = $repositoryContext.WorkingDirectory
-    $startInfo.RedirectStandardInput = $true
     $startInfo.RedirectStandardOutput = $true
     $startInfo.RedirectStandardError = $true
     $startInfo.UseShellExecute = $false
@@ -1065,17 +1074,13 @@ try {
         }
     }
 
-    Write-ResumeLog ('Launching CPA from {0}.' -f $resolvedAgentPath)
+    Write-ResumeLog ('Launching CPA: {0}' -f ($cpaArgs -join ' '))
 
     $process.add_OutputDataReceived($stdoutHandler)
     $process.add_ErrorDataReceived($stderrHandler)
     $process.Start() | Out-Null
     $process.BeginOutputReadLine()
     $process.BeginErrorReadLine()
-
-    $process.StandardInput.WriteLine($resolvedPrompt)
-    $process.StandardInput.Flush()
-    $process.StandardInput.Close()
 
     $finished = $process.WaitForExit(600000)
     if (-not $finished) {
