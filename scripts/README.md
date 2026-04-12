@@ -103,3 +103,42 @@ scripts/install_resume_task.bat 87abb67d-847e-48a5-a37f-7a2c863f7320 /fleet cont
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/resume_agent.ps1 -SessionId 87abb67d-847e-48a5-a37f-7a2c863f7320 -DryRun
 ```
+
+## Checking Scheduled Tasks
+
+To verify how many `ResumeCopilotAgent` tasks are currently scheduled, use one of these methods:
+
+### Using PowerShell (Recommended)
+Count all scheduled resume tasks:
+```powershell
+(Get-ScheduledTask -TaskName "ResumeCopilotAgent-*" | Measure-Object).Count
+```
+
+List all tasks with status and timing information:
+```powershell
+Get-ScheduledTask -TaskName "ResumeCopilotAgent-*" | Select-Object TaskName, State, @{Name="NextRunTime";Expression={$_.NextRunTime}}, @{Name="LastRunTime";Expression={$_.LastRunTime}}
+```
+
+### Using Command Prompt
+List all scheduled resume tasks:
+```cmd
+schtasks /Query /FO TABLE | findstr "ResumeCopilotAgent"
+```
+
+Get detailed information for a specific task:
+```cmd
+schtasks /Query /TN "ResumeCopilotAgent-87abb67d-847e-48a5-a37f-7a2c863f7320" /V /FO LIST
+```
+
+### Removing a Scheduled Task
+If you need to delete a scheduled task:
+
+PowerShell:
+```powershell
+Unregister-ScheduledTask -TaskName "ResumeCopilotAgent-87abb67d-847e-48a5-a37f-7a2c863f7320" -Confirm:$false
+```
+
+Command Prompt:
+```cmd
+schtasks /Delete /TN "ResumeCopilotAgent-87abb67d-847e-48a5-a37f-7a2c863f7320" /F
+```
