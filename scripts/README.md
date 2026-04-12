@@ -42,8 +42,11 @@ What it does:
 - Resolves the target repository and working directory from the session metadata, with a git remote fallback.
 - Queries open GitHub issues with `gh`.
 - Keeps only issues that contain `Acceptance Criteria`, have zero comments, do not start with `PRD:`, `Spec:`, or `RFC:`, and do not carry the `prd`, `spec`, or `design-doc` labels.
-- Treats the session as active when a session lock points to a live process, when a lock cannot be validated safely, or when recent non-terminal session events exist. Ignores stale locks whose PIDs are no longer running.
-- Reads rate-limit events from the session event log and skips execution until the cooldown expires.
+- Reads only the tail of the session event log for rate-limit and heartbeat signals instead of loading the entire event history.
+- Checks rate-limit cooldown before attempting recovery, and skips execution until the cooldown expires.
+- Treats the session as active only when a live lock also has a recent session heartbeat or active non-shell child work.
+- Treats live locks without a heartbeat for 15 minutes as stalled, terminates the stale Copilot process tree, removes leftover stale lock files, and then relaunches.
+- Removes dead stale locks, and also removes unparseable lock files when the session heartbeat is stale enough to classify them as orphaned.
 - Starts `cpa.bat` only after all checks pass.
 - Appends decisions, skip reasons, and CPA output to `resume_agent.log`.
 
