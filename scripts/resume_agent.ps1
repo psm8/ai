@@ -1031,15 +1031,15 @@ try {
         exit 1
     }
 
-    if ($DryRun) {
-        Write-ResumeLog ('Dry run: would execute {0} {1} in {2}.' -f $resolvedAgentPath, ($cpaArgs -join ' '), $repositoryContext.WorkingDirectory)
-        exit 0
-    }
-
     $cpaArgs = @(
         '--resume={0}' -f $SessionId,
         '--prompt={0}' -f $resolvedPrompt
     )
+
+    if ($DryRun) {
+        Write-ResumeLog ('Dry run: would execute {0} {1} in {2}.' -f $resolvedAgentPath, ($cpaArgs -join ' '), $repositoryContext.WorkingDirectory)
+        exit 0
+    }
 
     $startInfo = New-Object System.Diagnostics.ProcessStartInfo
     $startInfo.FileName = $resolvedAgentPath
