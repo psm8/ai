@@ -38,6 +38,14 @@ npx skills add Jeffallan/claude-skills --skill flutter-expert
 
 ---
 
+
+#### This Repository
+
+Skills developed in this repository:
+```bash
+npx skills add psm8/ai --skill ps-jira-writing-style
+```
+
 ## Agents Setup
 
 ### Copy agents to project (project-scoped, checked into git)
