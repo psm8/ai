@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+REPO_ROOT=$(git rev-parse --show-toplevel)
+if command -v pwsh &> /dev/null; then
+    pwsh -NoProfile -ExecutionPolicy Bypass -File "$REPO_ROOT/.githooks/update-setup-docs.ps1"
+elif command -v powershell &> /dev/null; then
+    powershell -NoProfile -ExecutionPolicy Bypass -File "$REPO_ROOT/.githooks/update-setup-docs.ps1"
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    if [[ -f "/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" ]]; then
+        /c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$REPO_ROOT/.githooks/update-setup-docs.ps1"
+    fi
+fi
+if ! git diff --quiet "$REPO_ROOT/docs/setup.md" 2>/dev/null; then
+    git add "$REPO_ROOT/docs/setup.md"
+fi
