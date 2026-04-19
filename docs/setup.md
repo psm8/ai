@@ -57,5 +57,6 @@ Skills developed in this repository:
 skg psm8/ai -s ps-github-issue-lifecycle
 skg psm8/ai -s ps-swarm-issue-delivery  # (dependency)
 skg psm8/ai -s ps-jira-writing-style
+skg psm8/ai -s ps-onboarding-pages-docs
 
 ```

@@ -23,6 +23,7 @@ Copilot skills.
 
 - **ps-github-issue-lifecycle** — Manages a GitHub issue from triage to close using Issues, Projects V2, PR linkage, and safe close or reopen decisions.
 - **ps-jira-writing-style** — Writes Jira comments and updates in the user's internal team style while preserving technical wording.
+- **ps-onboarding-pages-docs** — Turns screenshots, rollout notes, and implementation evidence into onboarding-focused static documentation pages.
 - **ps-swarm-issue-delivery** — Delivers `Ready` GitHub issues through `swarm-orchestrator` with reviewed plans, PR review mode, and proof-based closure.
 
 ### `scripts/`
