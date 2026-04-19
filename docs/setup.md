@@ -55,26 +55,3 @@ npx skills add psm8/ai --skill ps-github-issue-lifecycle
 npx skills add psm8/ai --skill ps-jira-writing-style
 npx skills add psm8/ai --skill ps-swarm-issue-delivery
 ```
-
-## Agents Setup
-
-### Copy agents to project (project-scoped, checked into git)
-```bash
-mkdir -p .github/agents
-cp -r solid-skills/agents/* .github/agents/
-```
-
-### Or copy to personal directory (available in all projects)
-```bash
-mkdir -p ~/.copilot/agents
-cp -r solid-skills/agents/* ~/.copilot/agents/
-```
-
-### Using agents in Copilot terminal
-```bash
-# Run a session with specific agent
-copilot --agent ps-solid-agent "build a feature using SOLID principles"
-
-# Or specify an agent for any task
-copilot --agent code-reviewer "review my changes"
-```
