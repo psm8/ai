@@ -1,10 +1,10 @@
-# Change Decisions After `prd-to-issues`
+# Change Decisions After `to-issues`
 
 Use this guide when you find a bug, discover missing acceptance criteria, or want to change something after backlog issues already exist.
 
 ## Default operating model
 
-- The parent feature issue is the live feature contract after `prd-to-issues`.
+- The parent feature issue is the live feature contract after `to-issues`.
 - Child issues are the live implementation contracts.
 - Project `Workflow State` is the lifecycle source of truth.
 - The PR is proof that a change landed.
