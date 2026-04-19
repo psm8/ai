@@ -183,6 +183,7 @@ if (Test-Path $setupPath) {
         }
     }
     if ($newContent -and $newContent -ne $content) {
-        $newContent | Out-File -FilePath $setupPath -Encoding UTF8 -NoNewline
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllText($setupPath, $newContent, $utf8NoBom)
     }
 }
