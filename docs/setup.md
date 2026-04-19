@@ -58,4 +58,7 @@ skg psm8/ai -s ps-github-issue-lifecycle
 skg psm8/ai -s ps-swarm-issue-delivery  # (dependency)
 skg psm8/ai -s ps-jira-writing-style
 
+# Local (Repository) Skills
+
+skl psm8/ai -s rs-onboarding-pages-docs
 ```
