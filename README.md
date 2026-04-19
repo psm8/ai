@@ -21,7 +21,9 @@ Copilot skills.
 
 **Available skills:**
 
-**ps-jira-writing-style** — Style guide for composing Jira comments with direct teammate-to-teammate voice. Matches surrounding thread language (multilingual support), uses pragmatic opinionated voice without corporate filler, keeps technical terms in English mixed with local language, and structures comments by type (Development Update, Technical Analysis, Acknowledgment, Questions, Problem Reports). See `skills/ps-jira-writing-style/SKILL.md` for full details.
+- **ps-github-issue-lifecycle** — Manages a GitHub issue from triage to close using Issues, Projects V2, PR linkage, and safe close or reopen decisions.
+- **ps-jira-writing-style** — Writes Jira comments and updates in the user's internal team style while preserving technical wording.
+- **ps-swarm-issue-delivery** — Delivers `Ready` GitHub issues through `swarm-orchestrator` with reviewed plans, PR review mode, and proof-based closure.
 
 ### `scripts/`
 Helper scripts for skill installation and session management.
