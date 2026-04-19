@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Onboarding Pages Docs</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0b1020;
+        --panel: #141b34;
+        --text: #e8ecf8;
+        --muted: #aeb8d4;
+        --accent: #7cc4ff;
+        --accent-2: #8ef0c3;
+        --border: #2a355f;
+        --shadow: rgba(0, 0, 0, 0.24);
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f5f7fb;
+          --panel: #ffffff;
+          --text: #172033;
+          --muted: #4f5f85;
+          --accent: #005bd3;
+          --accent-2: #0a8f61;
+          --border: #d8e0f0;
+          --shadow: rgba(23, 32, 51, 0.08);
+        }
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, Segoe UI, Arial, sans-serif;
+        line-height: 1.5;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      a { color: var(--accent); }
+
+      .wrap {
+        width: min(1080px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      header {
+        padding: 64px 0 32px;
+      }
+
+      .hero,
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: 0 12px 30px var(--shadow);
+      }
+
+      .hero {
+        padding: 40px;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--accent-2);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+      }
+
+      h1, h2, h3 {
+        line-height: 1.15;
+        margin: 0 0 16px;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        max-width: 12ch;
+      }
+
+      .lead {
+        max-width: 62ch;
+        color: var(--muted);
+        font-size: 1.1rem;
+        margin: 0 0 24px;
+      }
+
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .cta {
+        display: inline-block;
+        padding: 12px 18px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 700;
+        border: 1px solid var(--border);
+      }
+
+      .cta.primary {
+        background: var(--accent);
+        color: white;
+        border-color: transparent;
+      }
+
+      main {
+        padding: 8px 0 64px;
+      }
+
+      section {
+        margin: 24px 0;
+      }
+
+      .grid {
+        display: grid;
+        gap: 20px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+
+      .panel {
+        padding: 24px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      ol, ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      code,
+      pre {
+        font-family: Consolas, SFMono-Regular, monospace;
+      }
+
+      pre {
+        overflow-x: auto;
+        padding: 16px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.16);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        margin: 0 8px 8px 0;
+        font-size: 0.92rem;
+      }
+
+      footer {
+        padding: 0 0 48px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="hero">
+          <p class="eyebrow">Static onboarding pages</p>
+          <h1>Turn walkthrough artifacts into polished user docs.</h1>
+          <p class="lead">
+            The <strong>rs-onboarding-pages-docs</strong> skill helps convert screenshots,
+            rollout notes, and implementation evidence into simple HTML pages that read like
+            onboarding guides instead of internal delivery notes.
+          </p>
+          <div class="cta-row">
+            <a class="cta primary" href="#how-it-works">See the workflow</a>
+            <a class="cta" href="setup.md">Setup guide</a>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="grid two">
+          <article class="panel">
+            <h2>Who this is for</h2>
+            <p class="muted">
+              Teams that already have screenshots, notes, and examples, but want the final site
+              to feel like a clean product walkthrough for new users.
+            </p>
+            <div>
+              <span class="badge">End-user onboarding</span>
+              <span class="badge">Static HTML</span>
+              <span class="badge">GitHub-friendly docs</span>
+            </div>
+          </article>
+          <article class="panel">
+            <h2>What it produces</h2>
+            <p class="muted">
+              A lightweight docs site centered on <code>docs/index.html</code>, with clear steps,
+              helpful screenshots, and outcome-focused copy.
+            </p>
+            <pre><code>docs/
+├── index.html
+└── assets/
+    └── images/</code></pre>
+          </article>
+        </section>
+
+        <section id="how-it-works" class="panel">
+          <h2>How it works</h2>
+          <ol>
+            <li>Start from the user journey you want to explain.</li>
+            <li>Collect the screenshots, notes, and visible outcomes that support that journey.</li>
+            <li>Rewrite internal evidence into user-facing steps and expectations.</li>
+            <li>Publish the result as a static page with a clear landing experience.</li>
+          </ol>
+        </section>
+
+        <section class="grid two">
+          <article class="panel">
+            <h2>Writing rules</h2>
+            <ul>
+              <li>Lead with what the user can do.</li>
+              <li>Show the main action before edge cases.</li>
+              <li>Use screenshots to clarify visible states.</li>
+              <li>Keep the copy outcome-focused and concise.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h2>Avoid this</h2>
+            <ul>
+              <li>Internal QA phrasing</li>
+              <li>Engineering changelog voice</li>
+              <li>Proof-of-work or agent narration</li>
+              <li>Product-specific confidential examples in shared skill guidance</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="panel">
+          <h2>Install the skill</h2>
+          <p class="muted">
+            Add the skill from this repository, then invoke it when you need to turn implementation
+            artifacts into onboarding-ready docs.
+          </p>
+          <pre><code>skg psm8/ai -s rs-onboarding-pages-docs</code></pre>
+        </section>
+
+        <section class="panel">
+          <h2>Use it when you have</h2>
+          <ul>
+            <li>feature walkthrough screenshots</li>
+            <li>release or rollout notes</li>
+            <li>manual verification notes that need rewriting</li>
+            <li>a repo that should publish static docs without a full site generator</li>
+          </ul>
+        </section>
+      </main>
+
+      <footer>
+        <p>
+          For installation details and the broader repository setup, see
+          <a href="setup.md">docs/setup.md</a>.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
