@@ -1,5 +1,5 @@
 ---
-name: ps-onboarding-pages-docs
+name: rs-onboarding-pages-docs
 description: Creates onboarding-focused static documentation pages from screenshots, rollout notes, and implementation evidence. Use when turning walkthrough artifacts, release notes, manual test notes, or proof screenshots into GitHub Pages-ready end-user guides without exposing internal QA framing.
 ---
 
