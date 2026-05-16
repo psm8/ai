@@ -13,16 +13,13 @@ npx skills rm --all
 #### Common Global
 ```bash
 skg vercel-labs/skills -s find-skills
-skg mattpocock/skills -s to-prd
-skg mattpocock/skills -s to-issues
-skg mattpocock/skills -s grill-me
-npx add mattpocock/skills  -s write-a-skill -g -a github-copilot -y
+skg mattpocock/skills -s caveman to-prd to-issues grill-with-docs tdd write-a-skill
 ```
 
 #### Git
 ```bash
 skl github/awesome-copilot -s github-issues
-skl mattpocock/skills -s triage-issue
+skg mattpocock/skills -s triage
 skl obra/superpowers -s requesting-code-review
 ```
 

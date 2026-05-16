@@ -25,7 +25,8 @@ description: Creates onboarding-focused static documentation pages from screensh
 3. Build the page around a simple flow: what this helps with, how to use it, what to expect.
 4. Use screenshots only when they clarify a user action or result.
 5. Keep the site static and portable: plain HTML, lightweight assets, predictable paths.
-6. Validate that the final page reads like onboarding documentation, not QA evidence.
+6. For longer walkthroughs, layer in navigation patterns (flow diagram, collapsible cards, scroll-spy nav, callouts) as needed - see REFERENCE.md.
+7. Validate that the final page reads like onboarding documentation, not QA evidence.
 
 ## Output shape
 
@@ -50,3 +51,4 @@ See [REFERENCE.md](REFERENCE.md) for page structure, content patterns, screensho
 - [ ] Screenshots support actions, not internal process
 - [ ] Static files use stable, simple paths
 - [ ] Internal QA or proof language is absent
+- [ ] For long pages: overview is visible before scrolling, navigation helps jump between sections, key warnings stand out
