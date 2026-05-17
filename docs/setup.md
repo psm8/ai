@@ -51,6 +51,8 @@ Skills developed in this repository:
 ```bash
 # Global (Personal) Skills
 
+skg psm8/ai -s ps-contribution-critique
+skg psm8/ai -s ps-contribution-package  # (dependency)
 skg psm8/ai -s ps-github-issue-lifecycle
 skg psm8/ai -s ps-swarm-issue-delivery  # (dependency)
 skg psm8/ai -s ps-jira-writing-style
