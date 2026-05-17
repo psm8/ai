@@ -13,23 +13,22 @@ One short paragraph on what changed.
 
 What user or maintainer problem this solves.
 
-## What changed
+## Code shape
 
-- Item 1
-- Item 2
-- Item 3
+- The main pieces introduced or changed in the final design
+- How those pieces fit together
+- Where a reviewer should anchor their reading
 
-## Why this integrates minimally
+## Design choices
 
-- Which new seam, domain object, adapter, or composition point was introduced
-- Which existing files changed and why each change is unavoidable
-- Which broader refactors were intentionally not taken on
+- Which seam, domain object, adapter, or composition point was chosen
+- Why this shape is simple enough for the problem
+- Why broader or more invasive alternatives were intentionally not taken
 
-## Simplifications made before review
+## Tests worth carrying
 
-- Removed temporary or history-driven naming
-- Deleted migration-only comments or contributor-specific notes
-- Collapsed unnecessary branches, wrappers, or flags
+- Test 1: what it protects and why that drift matters
+- Test 2: what it protects and why that drift matters
 
 ## Reviewer guide
 

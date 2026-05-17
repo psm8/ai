@@ -16,18 +16,20 @@ description: Packages an approved contribution review into local-only maintainer
 
 1. Produce local markdown blocks or local files only.
 2. Do not create or update issues, PRs, comments, branches, or remote refs.
-3. Do not invent new scope that was not in the critique or implementation summary.
+3. Do not invent new scope that was not in the final implementation or approved design summary.
 4. Keep follow-up slices thin, end-to-end, and manually postable by a human.
-5. Lead with value, boundaries, and reviewer mental model before code detail.
-6. Remove historic, temporary, and current-user-only framing unless it is still required for maintainers to understand risk.
+5. The maintainer-facing package must describe the final code and decisions, not the author's review process.
+6. Lead with value, boundaries, and reviewer mental model before code detail.
+7. Mention tests only as part of the final end state and only when they protect behavior worth maintaining.
+8. Remove historic, temporary, and current-user-only framing unless it is still required for maintainers to understand risk.
 
 ## Workflow
 
 1. Confirm the target repo path and the output mode: chat-only or safe scratch directory.
-2. Read the approved critique, implementation summary, and relevant docs.
-3. If ambiguity remains, ask only the minimum blocking questions needed to finish the package.
-4. Draft the issue pack in a `to-issues` style, but keep it local-only and explicitly human-posted.
-5. Draft the PR description for first-time maintainers, focusing on value, boundaries, minimal integration, and reviewer guidance.
+2. Read the final implementation summary, design rationale, and relevant docs.
+3. If ambiguity remains, ask only the minimum blocking questions needed to explain the end state correctly.
+4. Draft the issue pack in a `to-issues` style only when the user wants follow-up work captured separately; keep it local-only and explicitly human-posted.
+5. Draft the maintainer-facing PR description around the shipped end state: what it is, why it exists, why the chosen design is simple and minimally invasive, and how to review it.
 6. Return markdown blocks in chat, or write files only to the approved safe scratch directory such as `issues.md` and `pr-description.md`.
 
 ## Refusal pattern
@@ -50,6 +52,8 @@ I can package the exact issue or PR text locally, but I will not publish it or p
 
 - [ ] The output stayed local-only
 - [ ] Follow-up slices are thin and independently understandable
-- [ ] The PR description explains value and boundaries to a first-time maintainer
-- [ ] Minimal integration and simplification choices are explicit
+- [ ] The PR description explains the final code and decisions to a first-time maintainer
+- [ ] Minimal integration and design choices are explicit
+- [ ] The package avoids critique history and author-process narration
+- [ ] Mentioned tests have a strong end-state justification
 - [ ] Historic and temporary language is removed unless still required
