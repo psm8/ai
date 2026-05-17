@@ -86,6 +86,14 @@ Ask one question at a time. Stop once the critique is actionable.
 - Which code paths, flags, wrappers, or indirections can be removed without losing behavior?
 - Which explanation only exists because the implementation is more complex than necessary?
 
+### Test value
+
+- Which tests would catch a real bug if behavior drifted?
+- Which tests are only re-stating the implementation and are likely to break on harmless refactors?
+- Which tests no longer protect an important behavior and should be removed before review?
+- For each important test, can you say in one sentence what it enforces and why that drift would matter?
+- Are there too many local-confidence tests compared to the small set worth asking maintainers to carry?
+
 ### Language cleanup
 
 - Are there migration notes, "for now" comments, or history-driven names that should disappear before review?
@@ -123,13 +131,26 @@ Call out any touched existing file that looks avoidable.
 - Rename:
 - Delete:
 
-### 5. Temporary or historic language scan
+### 5. Test value review
+
+| Test or test group | Keep / rewrite / remove | Why it is worth enforcing | Drift or bug it would catch | Brittleness risk |
+| --- | --- | --- | --- | --- |
+| `test name` | Keep | Protects real behavior | Would fail if X drifted | Low |
+
+Strong defaults:
+
+- Keep tests that verify user-visible behavior, invariants, integration seams, or previously broken flows.
+- Rewrite tests that are aimed at the right behavior but coupled to internals.
+- Remove tests that mostly mirror implementation shape, duplicate stronger coverage, or no longer protect a meaningful risk.
+- If you cannot explain in one sentence what a test protects and why that drift matters, do not carry it into PR unchanged.
+
+### 6. Temporary or historic language scan
 
 | Phrase or pattern | Location | Recommended cleanup |
 | --- | --- | --- |
 | `for now` | `path:line` | Replace with the final intent or remove |
 
-### 6. Recommendation summary
+### 7. Recommendation summary
 
 - **Keep:** what is already maintainer-friendly
 - **Change before review:** blocking cleanup

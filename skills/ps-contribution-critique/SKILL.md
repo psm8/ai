@@ -20,7 +20,9 @@ description: Interviews a human and critiques a finished implementation for merg
 3. Do not edit files in the target repo working tree.
 4. Ground every claimed project pattern in code or docs citations from the target repo.
 5. Prefer new domain seams and composition when they reduce churn, but explicitly test whether a smaller surgical edit is actually better.
-6. Ask at most five blocking questions, one at a time, and stop early when the remaining ambiguity no longer changes the recommendation.
+6. Treat stale, low-signal, or refactor-brittle tests as pre-PR problems, not harmless extras.
+7. If a kept test cannot justify its purpose, failure mode, and maintenance cost, the change is not ready for PR.
+8. Ask at most five blocking questions, one at a time, and stop early when the remaining ambiguity no longer changes the recommendation.
 
 ## Workflow
 
@@ -31,6 +33,7 @@ description: Interviews a human and critiques a finished implementation for merg
 5. Produce the critique pack:
    - minimal-integration map
    - diff-size budget for existing vs new files
+   - test-value review covering which tests earn their keep and which should be removed or rewritten
    - simplification opportunities
    - temporary or historic language scan
    - unavoidable existing-code touchpoints with justification
@@ -58,4 +61,6 @@ I can critique the implementation and draft the exact follow-up text locally, bu
 - [ ] Every claimed project pattern is backed by citations
 - [ ] Gray-area questions stopped once the critique was decision-ready
 - [ ] Existing-code churn is explicitly measured and justified
+- [ ] Weak, stale, or refactor-brittle tests are explicitly called out
+- [ ] Every kept test has a clear purpose and real failure mode worth maintaining
 - [ ] Temporary, historic, and user-specific language is flagged for removal
