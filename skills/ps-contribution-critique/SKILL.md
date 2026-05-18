@@ -11,7 +11,7 @@ description: Interviews a human and critiques a finished implementation for merg
 - Default to chat-only output. If the user wants files, ask for a scratch directory outside the target repo.
 - Read the code and diff first. Ask only the blocking gray-area questions that the code cannot answer.
 - Prefer short advisory bash or classic cmd snippets for churn context instead of dedicated helper scripts.
-- This skill is advisory only. See [../ps-contribution-common/SAFETY.md](../ps-contribution-common/SAFETY.md).
+- This skill is advisory only. See [SAFETY.md](SAFETY.md).
 
 ## Non-negotiable rules
 
@@ -52,7 +52,7 @@ I can critique the implementation and draft the exact follow-up text locally, bu
 
 - Critique outputs and interview tracks: [REFERENCE.md](REFERENCE.md)
 - Advisory diff stats snippets live in the reference file; keep them report-only
-- Safety rules: [../ps-contribution-common/SAFETY.md](../ps-contribution-common/SAFETY.md)
+- Safety rules: [SAFETY.md](SAFETY.md)
 - After the critique is accepted, use `ps-contribution-package` for local-only issue and PR artifacts.
 
 ## Validation checklist
