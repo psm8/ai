@@ -10,7 +10,7 @@ description: Packages an approved contribution review into local-only maintainer
 - Use this only after the critique is accepted or the user provides an equivalent reviewed summary.
 - Default to chat-only output. If the user wants files, ask for a scratch directory outside the target repo.
 - Package markdown only. Do not publish anything remotely.
-- This skill is advisory only. See [../ps-contribution-common/SAFETY.md](../ps-contribution-common/SAFETY.md).
+- This skill is advisory only. See [SAFETY.md](SAFETY.md).
 
 ## Non-negotiable rules
 
@@ -45,7 +45,7 @@ I can package the exact issue or PR text locally, but I will not publish it or p
 - Packaging rules: [REFERENCE.md](REFERENCE.md)
 - Issue template: [ISSUE_TEMPLATE.md](ISSUE_TEMPLATE.md)
 - PR template: [PR_TEMPLATE.md](PR_TEMPLATE.md)
-- Safety rules: [../ps-contribution-common/SAFETY.md](../ps-contribution-common/SAFETY.md)
+- Safety rules: [SAFETY.md](SAFETY.md)
 - Recommend `to-issues`, `requesting-code-review`, or similar skills by name only when the user explicitly wants a next step. Do not invoke them automatically.
 
 ## Validation checklist
