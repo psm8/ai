@@ -26,6 +26,7 @@ skl obra/superpowers -s requesting-code-review
 #### Solid
 ```bash
 skg psm8/solid-skills -s ps-solid
+skg b4r7x/agent-skills -s anti-slop
 ```
 
 #### Kotlin
@@ -51,7 +52,9 @@ Skills developed in this repository:
 ```bash
 # Global (Personal) Skills
 
-skg psm8/ai -s ps-contribution-critique
+skg psm8/ai -s ps-anti-ai-slop-code-review
+skg psm8/ai -s ps-contribution-critique  # (dependency)
+skg psm8/ai -s ps-autoloop
 skg psm8/ai -s ps-contribution-package  # (dependency)
 skg psm8/ai -s ps-github-issue-lifecycle
 skg psm8/ai -s ps-swarm-issue-delivery  # (dependency)

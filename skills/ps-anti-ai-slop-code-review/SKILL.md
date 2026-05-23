@@ -22,7 +22,7 @@ Optionally install a writing-style skill for report tone — the skill checks at
 
 - Use when reviewing backend code from an external MR or local changes for merge-readiness.
 - Orchestrates `ps-contribution-critique`, `ps-solid`, and `b4r7x/agent-skills@anti-slop`.
-- Read `AGENTS.md`, `README.md`, documentation, and `CONTEXT.md` (if existing) for shared language and naming before inventing new terms.
+- Read `AGENTS.md`, `README.md`, documentation, `docs/adr/` and `CONTEXT.md` (if existing) for shared language and naming before inventing new terms.
 
 ## Non-negotiable rules
 
@@ -34,7 +34,7 @@ Optionally install a writing-style skill for report tone — the skill checks at
 
 ## Workflow
 
-1. Read the diff, touched files, adjacent patterns, and local docs (`AGENTS.md`, `README.md`, `CONTEXT.md`).
+1. Read the diff, touched files, adjacent patterns, and local docs (`AGENTS.md`, `README.md`, `docs/adr/`, `CONTEXT.md`).
 2. Check open issues in the remote repo — do not flag something already scheduled.
 3. Run the three review dimensions below. Merge findings into one report.
 4. Write a detailed report to `ai-reports/<scope>-review-<date>.md`.
