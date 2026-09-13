@@ -3,67 +3,43 @@
 ## Inputs to confirm
 
 1. Target repo path
-2. Current diff, patch, or implementation summary
+2. Selected branch, staged index, or supplied patch plus its base; a summary alone cannot establish exact churn
 3. Relevant docs or ADRs, if any
 4. Output mode: chat-only or safe scratch directory outside the target repo
 
 ## Analysis order
 
-1. Read the implementation and touched files.
+1. Bind the implementation and touched file versions to the selected input below.
 2. Find comparable patterns already used in the target repo.
 3. Measure how much existing code was changed versus how much was added.
 4. Look for places where a new domain seam or composition point would reduce churn.
 5. Scan for temporary, historic, or user-specific language that should not ship.
 6. Ask only the gray-area questions that still change the recommendation.
 
-## Advisory diff stats snippets
+## Selected review input
 
-Do not add a dedicated helper script by default. These are rough report-only snippets for critique or PR prose.
+Resolve ambiguity before calculating churn. Use read-only Git commands with an explicit absolute repository path; do not stage, switch branches, write a tree, or rebuild to manufacture review input.
 
-Run them from the target repo root. Prefer bash on Unix-like systems and classic `cmd` on Windows.
+| Mode | Record | Read |
+|---|---|---|
+| Branch | Resolved base ref, merge-base, and tip commit IDs | `git -C <repo> diff <merge-base> <tip>`; file versions from the tip |
+| Staged index | HEAD ID and hash of the exact binary cached diff (or caller-supplied index-tree identity) | `git -C <repo> diff --cached <recorded-HEAD>`; staged blobs via `git show :<path>` |
+| Supplied patch | Patch bytes/hash, base identity, and selected paths | That patch and matching base/result content supplied for review |
 
-### Bash
+For staged review, HEAD alone omits the contribution and the worktree can contain unrelated edits to the same file. For patch review, a current checkout is not automatically the patch result. If result content or base is unavailable, bound conclusions to the visible hunks and report that limitation.
 
-```bash
-BASE="${BASE:-origin/main}"
+Use the **same comparison arguments** for the full diff, paths, and stats:
 
-echo "New files:"
-git diff --name-only --diff-filter=A "$BASE"...HEAD
+| Report | Git diff flags |
+|---|---|
+| New files | `--name-only --diff-filter=A` |
+| Existing files touched | `--name-only --diff-filter=CDMRTUXB` |
+| Existing-file churn | `--numstat --diff-filter=CDMRTUXB` |
+| Total churn | `--shortstat` |
 
-echo
-echo "Touched existing files:"
-git diff --name-only --diff-filter=CDMRTUXB "$BASE"...HEAD
+Use `--no-ext-diff --no-textconv` for reproducible Git output. When parsing paths/stats, use `-z` and explicit UTF-8 decoding; retain rename/copy and binary-file cases. For supplied patches, derive stats from the frozen patch rather than substituting a branch diff. No dedicated helper script is needed by default.
 
-echo
-echo "Summary for existing files:"
-git diff --shortstat --diff-filter=CDMRTUXB "$BASE"...HEAD
-
-echo
-echo "Per-file line stats for existing files:"
-git diff --numstat --diff-filter=CDMRTUXB "$BASE"...HEAD
-```
-
-### Windows cmd
-
-```cmd
-@echo off
-set BASE=origin/main
-
-echo New files:
-git diff --name-only --diff-filter=A %BASE%...HEAD
-
-echo.
-echo Touched existing files:
-git diff --name-only --diff-filter=CDMRTUXB %BASE%...HEAD
-
-echo.
-echo Summary for existing files:
-git diff --shortstat --diff-filter=CDMRTUXB %BASE%...HEAD
-
-echo.
-echo Per-file line stats for existing files:
-git diff --numstat --diff-filter=CDMRTUXB %BASE%...HEAD
-```
+Cite changed lines in their selected file version and convention precedents at their recorded revision. Recheck the input identity before returning the critique. If it changed, refresh affected evidence instead of combining snapshots. **Done:** every path, count, and finding belongs to the declared contribution.
 
 ## Suggested question tracks
 

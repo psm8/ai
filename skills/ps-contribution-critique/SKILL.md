@@ -9,8 +9,8 @@ description: Interviews a human and critiques a finished implementation for merg
 
 - Use this after implementation exists and before a human opens issues or a PR in the target repo.
 - Default to chat-only output. If the user wants files, ask for a scratch directory outside the target repo.
-- Read the code and diff first. Ask only the blocking gray-area questions that the code cannot answer.
-- Prefer short advisory bash or classic cmd snippets for churn context instead of dedicated helper scripts.
+- Select the review input first: branch, staged index, or supplied patch. Read that exact code/diff; ask only blocking gray-area questions.
+- Use the reference's report-only stats against the same input, in the environment's native shell.
 - This skill is advisory only. See [SAFETY.md](SAFETY.md).
 
 ## Non-negotiable rules
@@ -26,8 +26,8 @@ description: Interviews a human and critiques a finished implementation for merg
 
 ## Workflow
 
-1. Confirm the target repo path and the output mode: chat-only or safe scratch directory.
-2. Read the relevant diff, touched files, adjacent patterns, and local docs.
+1. Confirm the target repo, output mode, and [selected review input](REFERENCE.md#selected-review-input). Record its base/tip or patch identity before reading.
+2. Read the selected diff and corresponding file versions, then adjacent patterns and local docs. Keep unstaged/unrelated work outside the contribution.
 3. Build a convention-evidence table with concrete citations.
 4. Identify only the unresolved gray areas, then ask one blocking question at a time with a recommended answer.
 5. Produce the critique pack:
@@ -60,7 +60,7 @@ I can critique the implementation and draft the exact follow-up text locally, bu
 - [ ] The target repo stayed read-only
 - [ ] Every claimed project pattern is backed by citations
 - [ ] Gray-area questions stopped once the critique was decision-ready
-- [ ] Existing-code churn is explicitly measured and justified
+- [ ] Diff, file versions, citations, and churn use one recorded input; it remained unchanged through review
 - [ ] Weak, stale, or refactor-brittle tests are explicitly called out
 - [ ] Every kept test has a clear purpose and real failure mode worth maintaining
 - [ ] Temporary, historic, and user-specific language is flagged for removal

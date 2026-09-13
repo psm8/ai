@@ -59,6 +59,7 @@ skg psm8/ai -s ps-contribution-package  # (dependency)
 skg psm8/ai -s ps-github-issue-lifecycle
 skg psm8/ai -s ps-swarm-issue-delivery  # (dependency)
 skg psm8/ai -s ps-jira-writing-style
+skg psm8/ai -s ps-simple-short-analogy
 
 # Local (Repository) Skills
 
