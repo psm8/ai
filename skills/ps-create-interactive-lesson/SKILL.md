@@ -76,7 +76,7 @@ Bug hunts: MCQ or click-line verdict + optional free-text graded by a **keyword 
 
 ### 5. Fill the template
 
-Copy [`references/LESSON-TEMPLATE.html`](references/LESSON-TEMPLATE.html) → `lessons/<slug>.html`. Replace:
+Copy [`references/LESSON-TEMPLATE.html`](references/LESSON-TEMPLATE.html) → `lessons/<slug>.html`, then fill it in **section-sized edits** (intro → modules → drill → scripts). A lesson of this length overflows a single full-file write, which fails after partial progress. Replace:
 
 - Title, hero, badges, section ids + nav labels
 - Module bodies (code, tables, callouts)
@@ -94,9 +94,21 @@ Quiz options are **runtime-shuffled** by the template. Do not rely on option ord
 - Tag balance (buttons/divs/sections/scripts).
 - JS syntax check (e.g. extract `<script>` and `node --check`).
 - Confirm quiz shuffle path still present; bug hunts have feedback UI wired.
+- **Execute the page in a headless DOM** (jsdom or browser): click every lab control, quiz option, tab, and bug-hunt line; assert the state change is *visible* — any class your lab JS toggles must have a CSS rule, or the lab is dead while all static checks pass.
 - Open in browser when the environment allows.
 
-**Done when:** checks pass; file opens; progress + quiz state work.
+**Done when:** checks pass; every interaction produces visible feedback on click; file opens; progress + quiz state work.
+
+### 7. Review loop (subagents)
+
+Dispatch two reviewers **in parallel**, then apply fixes yourself:
+
+- **Fact-checker** — verify every graded answer, step number, event name, and mechanism claim against primary source (language/framework source or official docs). Report: quote → correction → source.
+- **Simplifier** — ambiguous quiz options (two defensible answers), lab instructions that don't match the actual control flow, unexplained acronyms, facts stated three times.
+
+Fix at string level; adding content is out of scope here. Re-run step 6 checks after editing.
+
+**Done when:** both reviewers return SHIP, or every MUST/HIGH finding is fixed and re-verified.
 
 ## Content bar
 
@@ -131,4 +143,4 @@ Effective-learning map (why the shape is this way — do not preach inside the l
 
 ## Completion (lesson)
 
-Learner opens `lessons/<slug>.html`, works modules in order, hits shuffled quizzes, runs labs, attempts the bug hunt with hints if stuck, scores the drill, ticks self-score. Skill statement is defensible from the cheatsheet + drill answers.
+Learner opens `lessons/<slug>.html`, works modules in order, hits shuffled quizzes, runs labs, attempts the bug hunt with hints if stuck, scores the drill, ticks self-score. Skill statement is defensible from the cheatsheet + drill answers. Review loop (step 7) returned SHIP.
