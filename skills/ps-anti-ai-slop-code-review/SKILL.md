@@ -37,8 +37,9 @@ Optionally install a writing-style skill for report tone — the skill checks at
 1. Read the diff, touched files, adjacent patterns, and local docs (`AGENTS.md`, `README.md`, `docs/adr/`, `CONTEXT.md`).
 2. Check open issues in the remote repo — do not flag something already scheduled.
 3. Run the three review dimensions below. Merge findings into one report.
-4. Write a detailed report to `ai-reports/<scope>-review-<date>.md`.
-5. Write a sum-up file to `ai-reports/<scope>-sumup-<date>.md` — at most a few bullet points; can be 0 if nothing is worth mentioning. Paste-ready for the MR review.
+4. Classify every potential fix by its LOC impact (see [Fix classification](#fix-classification)) and group the report by class.
+5. Write a detailed report to `ai-reports/<scope>-review-<date>.md`.
+6. Write a sum-up file to `ai-reports/<scope>-sumup-<date>.md` — at most a few bullet points; can be 0 if nothing is worth mentioning. Paste-ready for the MR review.
 
 ### Dimension 1 — Merge-readiness (`ps-contribution-critique`)
 
@@ -52,11 +53,26 @@ Delegates to `ps-solid`.
 
 Delegates to `b4r7x/agent-skills@anti-slop`. Flag **only** what the code under review introduces — do not flag pre-existing patterns in untouched code.
 
+## Fix classification
+
+Estimate the net line change of each suggested fix (lines added minus lines removed) and tag it:
+
+| Class | Rule |
+|---|---|
+| **REMOVING LOC** | net 5+ lines removed |
+| **REPLACING LOC** | net change between -4 and +4 lines |
+| **ADDING LOC** | net 5+ lines added |
+
+- Show the class and estimated delta on each finding, e.g. `[REMOVING LOC, ~-12]`.
+- Order report sections REMOVING → REPLACING → ADDING.
+- Tag sum-up bullets with their class too.
+
 ## Validation checklist
 
 - [ ] Target repo stayed read-only
 - [ ] Open issues checked — nothing flagged that is already scheduled
 - [ ] Project-specific naming used from docs, not invented
 - [ ] Writing-style skill checked and used if available, otherwise direct/concise tone
+- [ ] Every finding tagged REMOVING / REPLACING / ADDING LOC with an estimated delta
 - [ ] Detailed report written to `ai-reports/`
 - [ ] Sum-up file written to `ai-reports/` (can be empty/0 points)
