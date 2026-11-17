@@ -37,6 +37,28 @@ Use the **same comparison arguments** for the full diff, paths, and stats:
 | Existing-file churn | `--numstat --diff-filter=CDMRTUXB` |
 | Total churn | `--shortstat` |
 
+Human-readable examples only (Bash, then Windows CMD). Set `REPO` once to the frozen absolute repository path; `MERGE_BASE` and `TIP` must already contain the recorded commit IDs.
+
+```bash
+COMPARE=("$MERGE_BASE" "$TIP")
+git -C "$REPO" diff --no-ext-diff --no-textconv "${COMPARE[@]}" --
+git -C "$REPO" diff --no-ext-diff --no-textconv --name-only --diff-filter=A "${COMPARE[@]}" --
+git -C "$REPO" diff --no-ext-diff --no-textconv --name-only --diff-filter=CDMRTUXB "${COMPARE[@]}" --
+git -C "$REPO" diff --no-ext-diff --no-textconv --numstat --diff-filter=CDMRTUXB "${COMPARE[@]}" --
+git -C "$REPO" diff --no-ext-diff --no-textconv --shortstat "${COMPARE[@]}" --
+```
+
+```bat
+set "COMPARE=%MERGE_BASE% %TIP%"
+git -C "%REPO%" diff --no-ext-diff --no-textconv %COMPARE% --
+git -C "%REPO%" diff --no-ext-diff --no-textconv --name-only --diff-filter=A %COMPARE% --
+git -C "%REPO%" diff --no-ext-diff --no-textconv --name-only --diff-filter=CDMRTUXB %COMPARE% --
+git -C "%REPO%" diff --no-ext-diff --no-textconv --numstat --diff-filter=CDMRTUXB %COMPARE% --
+git -C "%REPO%" diff --no-ext-diff --no-textconv --shortstat %COMPARE% --
+```
+
+For staged review, set `RECORDED_HEAD` to the recorded HEAD ID and replace only the comparison assignment: `COMPARE=(--cached "$RECORDED_HEAD")` in Bash or `set "COMPARE=--cached %RECORDED_HEAD%"` in CMD. The staged input identity must still be rechecked before returning; these commands do not freeze the index.
+
 Use `--no-ext-diff --no-textconv` for reproducible Git output. When parsing paths/stats, use `-z` and explicit UTF-8 decoding; retain rename/copy and binary-file cases. For supplied patches, derive stats from the frozen patch rather than substituting a branch diff. No dedicated helper script is needed by default.
 
 Cite changed lines in their selected file version and convention precedents at their recorded revision. Recheck the input identity before returning the critique. If it changed, refresh affected evidence instead of combining snapshots. **Done:** every path, count, and finding belongs to the declared contribution.

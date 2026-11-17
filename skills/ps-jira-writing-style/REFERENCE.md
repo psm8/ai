@@ -17,6 +17,13 @@
 6. Back claims with evidence when it matters, but do not overload routine status updates.
 7. End with a concrete next step only when there actually is one.
 
+## Writing Rules
+
+1. Lead with the answer or decision, then at most one short reason ("Review. To nasz największy bottleneck...").
+2. Reuse the team's own wording and notation from chat or the thread (arrows like `Dev: X -> Y`, their verbs, their labels) instead of rephrasing it more formally.
+3. Address the reader directly in second person singular ("zerknij", "bierzesz"), not "należy" or "the developer should".
+4. Give one concrete example per rule (a real ticket key, branch name or label), not an abstract description.
+
 ## Comment Type Guidance
 
 ### Development Update

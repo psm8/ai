@@ -10,6 +10,7 @@ description: Writes Jira comments, descriptions, and updates in the user's inter
 - Match the thread language; if the thread has no clear language yet, use the user's current language.
 - Keep code symbols, endpoint paths, config keys, class names, and labels in their original technical form.
 - Prefer teammate-to-teammate wording: short summary, concrete bullets, and a next step only when one actually exists.
+- Answer first, reason after; write to the reader as "you", in the team's own words.
 - Pick one shape before writing: development update, technical analysis, quick acknowledgment, or problem report.
 
 ## Prerequisites
