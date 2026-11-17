@@ -63,5 +63,6 @@ skg psm8/ai -s ps-simple-short-analogy
 
 # Local (Repository) Skills
 
+skl psm8/ai -s create-interactive-lesson
 skl psm8/ai -s rs-onboarding-pages-docs
 ```

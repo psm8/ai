@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title><!-- AUTHOR: Topic — Senior Lesson --></title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --bg-elev: #121a2b;
+    --bg-elev2: #182338;
+    --border: #243044;
+    --text: #e7eefc;
+    --muted: #9aaac4;
+    --accent: #38bdf8;
+    --accent2: #34d399;
+    --warn: #fbbf24;
+    --danger: #fb7185;
+    --violet: #a78bfa;
+    --code-bg: #0a1020;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --radius: 14px;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #16324f55, transparent),
+      radial-gradient(900px 500px at 100% 0%, #1a2a5555, transparent),
+      var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(12px);
+    background: #0b1220cc;
+    border-bottom: 1px solid var(--border);
+    padding: .75rem 1.25rem;
+    display: flex; gap: 1rem; align-items: center; justify-content: space-between;
+  }
+  .brand { font-weight: 700; letter-spacing: .02em; }
+  .brand span { color: var(--accent); }
+  .progress-wrap { flex: 1; max-width: 420px; }
+  .progress-label { font-size: .75rem; color: var(--muted); margin-bottom: .25rem; display: flex; justify-content: space-between; }
+  .progress { height: 8px; border-radius: 999px; background: #1e293b; overflow: hidden; }
+  .progress > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .35s ease; }
+  .top-actions { display: flex; gap: .5rem; align-items: center; }
+
+  .btn {
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+    color: var(--text);
+    border-radius: 10px;
+    padding: .45rem .75rem;
+    cursor: pointer;
+    font: inherit;
+    font-size: .85rem;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary {
+    background: linear-gradient(135deg, #0ea5e9, #22d3ee);
+    color: #041018; border: 0; font-weight: 700;
+  }
+  .btn.primary:hover { filter: brightness(1.05); color: #041018; }
+  .btn.ghost { background: transparent; }
+  .btn:disabled { opacity: .55; cursor: default; }
+
+  .layout { display: grid; grid-template-columns: 280px 1fr; max-width: 1400px; margin: 0 auto; }
+  .sidebar {
+    position: sticky; top: 62px;
+    height: calc(100vh - 62px);
+    overflow: auto;
+    border-right: 1px solid var(--border);
+    padding: 1.25rem 1rem 2rem;
+    background: #0b1220aa;
+  }
+  .sidebar h2 { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 .75rem; }
+  .nav a {
+    display: flex; align-items: center; gap: .55rem;
+    padding: .48rem .65rem; border-radius: 10px; color: var(--text);
+    margin-bottom: .2rem; font-size: .92rem;
+  }
+  .nav a:hover { background: var(--bg-elev); text-decoration: none; }
+  .nav a.active { background: #0ea5e922; color: var(--accent); box-shadow: inset 2px 0 0 var(--accent); }
+  .nav .dot { width: .55rem; height: .55rem; border-radius: 50%; border: 1.5px solid var(--muted); flex: 0 0 auto; }
+  .nav a.done .dot { background: var(--accent2); border-color: var(--accent2); }
+  .nav .num { color: var(--muted); font-size: .78rem; min-width: 1.2rem; }
+
+  main { padding: 1.5rem 2rem 4rem; min-width: 0; }
+  section { margin: 0 0 2.5rem; scroll-margin-top: 80px; }
+  .hero { padding: 2rem 0 1rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .hero h1 {
+    margin: 0 0 .5rem;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    line-height: 1.15;
+    background: linear-gradient(90deg, #e7eefc, #7dd3fc 50%, #34d399);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.lead { color: var(--muted); max-width: 70ch; font-size: 1.05rem; }
+  .badges { display: flex; flex-wrap: wrap; gap: .45rem; margin: .85rem 0 1.1rem; }
+  .badge {
+    font-size: .75rem; padding: .25rem .55rem; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--muted); background: var(--bg-elev);
+  }
+  .badge.ok { color: var(--accent2); border-color: #065f46; }
+  .badge.op { color: var(--warn); border-color: #854d0e; }
+  .badge.q { color: var(--violet); border-color: #5b21b6; }
+
+  h2.sec-title { font-size: 1.45rem; margin: 0 0 .75rem; display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; }
+  h2.sec-title .tag {
+    font-size: .7rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--accent); background: #0ea5e918; border: 1px solid #0ea5e933;
+    padding: .2rem .5rem; border-radius: 999px;
+  }
+  h3 { margin: 1.5rem 0 .5rem; font-size: 1.12rem; }
+  h4 { margin: 1.1rem 0 .4rem; font-size: 1rem; color: #dbe7ff; }
+  p { margin: .55rem 0; max-width: 80ch; }
+  ul, ol { max-width: 80ch; padding-left: 1.25rem; }
+  li { margin: .28rem 0; }
+  strong { color: #f8fafc; }
+  em { color: #c4d4f0; }
+
+  .card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.15rem;
+    margin: 1rem 0;
+    box-shadow: var(--shadow);
+  }
+  .card h3, .card h4 { margin-top: 0; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    main { padding: 1rem 1rem 3rem; }
+  }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #0ea5e912;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: .85rem 1rem;
+    margin: 1rem 0;
+  }
+  .callout.opinion { border-left-color: var(--warn); background: #fbbf2412; }
+  .callout.danger { border-left-color: var(--danger); background: #fb718512; }
+  .callout.good { border-left-color: var(--accent2); background: #34d39912; }
+  .callout .label {
+    font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: .25rem;
+  }
+  .callout.opinion .label { color: var(--warn); }
+  .callout.danger .label { color: var(--danger); }
+  .callout.good .label { color: var(--accent2); }
+
+  pre, code { font-family: var(--mono); }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .95rem 1rem;
+    overflow: auto;
+    font-size: .86rem;
+    line-height: 1.55;
+  }
+  code { background: #1a2336; padding: .1rem .35rem; border-radius: 6px; font-size: .88em; }
+  pre code { background: transparent; padding: 0; }
+  .k { color: #c084fc; }
+  .t { color: #67e8f9; }
+  .c { color: #64748b; font-style: italic; }
+  .s { color: #86efac; }
+  .n { color: #fbbf24; }
+  .fn { color: #93c5fd; }
+  .op2 { color: #fda4af; }
+
+  table { width: 100%; border-collapse: collapse; margin: .85rem 0; font-size: .92rem; }
+  th, td { border: 1px solid var(--border); padding: .55rem .7rem; text-align: left; vertical-align: top; }
+  th { background: var(--bg-elev2); font-weight: 600; color: #dbe7ff; }
+  tr:nth-child(even) td { background: #121a2b88; }
+  td.ok { color: var(--accent2); }
+  td.bad { color: var(--danger); }
+  td.meh { color: var(--warn); }
+
+  .quiz {
+    background: linear-gradient(180deg, #132033, #101927);
+    border: 1px solid #2a3b55;
+    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+    margin: 1.1rem 0;
+  }
+  .quiz h4 { margin: 0 0 .75rem; color: var(--accent); font-size: .85rem; letter-spacing: .05em; text-transform: uppercase; }
+  .quiz .q { font-weight: 600; margin-bottom: .65rem; }
+  .options { display: grid; gap: .45rem; }
+  .option {
+    text-align: left;
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+    color: var(--text);
+    border-radius: 10px;
+    padding: .65rem .8rem;
+    cursor: pointer;
+    font: inherit;
+  }
+  .option:hover:not(:disabled) { border-color: var(--accent); }
+  .option.correct { border-color: var(--accent2); background: #34d39918; }
+  .option.wrong { border-color: var(--danger); background: #fb718518; }
+  .option:disabled { cursor: default; opacity: .92; }
+  .explain {
+    display: none;
+    margin-top: .75rem;
+    padding: .75rem .9rem;
+    border-radius: 10px;
+    background: #0b1220;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    font-size: .93rem;
+  }
+  .explain.show { display: block; }
+  .explain strong { color: var(--text); }
+
+  .lab {
+    border: 1px solid #2a3b55;
+    border-radius: var(--radius);
+    background: #0d1626;
+    padding: 1.1rem;
+    margin: 1.2rem 0;
+  }
+  .lab h4 { margin-top: 0; color: var(--violet); }
+  .lab-controls { display: flex; flex-wrap: wrap; gap: .55rem; margin: .75rem 0; }
+  .outcome { margin-top: .85rem; font-family: var(--mono); font-size: .92rem; }
+  .outcome .ok, .ok { color: var(--accent2); }
+  .outcome .no, .no { color: var(--danger); }
+  .outcome .meh { color: var(--warn); }
+
+  .mem-panel { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  @media (max-width: 720px) { .mem-panel { grid-template-columns: 1fr; } }
+  .thread {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .85rem;
+    font-family: var(--mono);
+    font-size: .86rem;
+  }
+  .thread header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .55rem; font-family: var(--sans); }
+  .thread .lines { display: grid; gap: .25rem; }
+  .line {
+    padding: .35rem .5rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    color: #cbd5e1;
+  }
+  .line.active { border-color: var(--warn); background: #fbbf2414; }
+  .line.executed { border-color: #243044; background: #0a1020; color: #7dd3fc; }
+
+  .tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin: .75rem 0; }
+  .tab {
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: .35rem .75rem;
+    cursor: pointer;
+    font: inherit;
+    font-size: .84rem;
+  }
+  .tab.active { color: var(--accent); border-color: var(--accent); background: #0ea5e914; }
+
+  .myth-grid { display: grid; gap: .65rem; }
+  .myth {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .myth .head {
+    width: 100%; text-align: left; border: 0; background: transparent; color: var(--text);
+    font: inherit; padding: .75rem .9rem; cursor: pointer;
+    display: flex; justify-content: space-between; gap: 1rem; align-items: center;
+  }
+  .myth .head .verdict {
+    font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: .2rem .5rem; border-radius: 999px; white-space: nowrap;
+  }
+  .myth .head .verdict.folk { background: #fb718522; color: var(--danger); border: 1px solid #fb718555; }
+  .myth .head .verdict.partial { background: #fbbf2422; color: var(--warn); border: 1px solid #fbbf2455; }
+  .myth .head .verdict.real { background: #34d39922; color: var(--accent2); border: 1px solid #34d39955; }
+  .myth .body { display: none; padding: 0 .95rem .9rem; color: var(--muted); }
+  .myth.open .body { display: block; }
+
+  .scoreboard { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1rem 0; }
+  .stat {
+    flex: 1; min-width: 140px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: .75rem .9rem; text-align: center;
+  }
+  .stat .v { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .stat .l { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+  .decision-tree { display: grid; gap: .55rem; }
+  .decision-step {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-elev); padding: .75rem .9rem;
+  }
+  .decision-step .q { font-weight: 600; margin-bottom: .35rem; }
+  .decision-step .a { color: var(--muted); font-size: .92rem; }
+
+  .hidden { display: none !important; }
+  footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .9rem; }
+  .kbd {
+    font-family: var(--mono); border: 1px solid var(--border);
+    background: var(--bg-elev2); border-radius: 6px; padding: .05rem .35rem; font-size: .85em;
+  }
+  .notebook { background: #101927; border: 1px dashed #345; border-radius: 12px; padding: .85rem 1rem; }
+  .checklist { list-style: none; padding: 0; }
+  .checklist li { display: flex; gap: .6rem; align-items: flex-start; padding: .4rem 0; border-bottom: 1px solid #1a2336; }
+  .checklist input { margin-top: .3rem; accent-color: var(--accent2); }
+  .flash {
+    min-height: 120px; display: grid; place-items: center;
+    text-align: center; padding: 1.2rem;
+  }
+  .flash .front, .flash .back { max-width: 60ch; }
+  .flash .back { display: none; }
+  .flash.flipped .front { display: none; }
+  .flash.flipped .back { display: block; }
+
+  /* Bug hunt */
+  .bughunt {
+    border: 1px solid #3b2d55;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #15102a, #101927);
+    padding: 1.1rem 1.2rem;
+    margin: 1.2rem 0;
+  }
+  .bughunt > h4 { margin-top: 0; color: var(--danger); }
+  .bughunt .bh-meta { color: var(--muted); font-size: .9rem; margin-bottom: .65rem; }
+  .bh-lines { display: grid; gap: .2rem; }
+  .bh-line {
+    font-family: var(--mono); font-size: .86rem;
+    padding: .35rem .55rem; border-radius: 8px;
+    border: 1px solid transparent; color: #cbd5e1; cursor: default;
+  }
+  .bh-line.clickable { cursor: pointer; }
+  .bh-line.clickable:hover { border-color: var(--violet); }
+  .bh-line.picked { border-color: var(--violet); background: #a78bfa18; }
+  .bh-line.flagged-bad { border-color: var(--danger); background: #fb718518; }
+  .bh-line.flagged-good { border-color: var(--accent2); background: #34d39918; }
+  .bh-hints { display: flex; flex-wrap: wrap; gap: .4rem; margin: .65rem 0; }
+  .bh-hint {
+    display: none; margin: .35rem 0; padding: .55rem .75rem;
+    border-radius: 8px; background: #0b1220; border: 1px dashed var(--border);
+    color: var(--muted); font-size: .9rem;
+  }
+  .bh-hint.show { display: block; }
+  .bh-explain {
+    width: 100%; min-height: 70px; margin: .55rem 0;
+    background: var(--bg-elev); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: .6rem .75rem; font: inherit; resize: vertical;
+  }
+  .bh-feedback {
+    display: none; margin-top: .75rem; padding: .75rem .9rem;
+    border-radius: 10px; background: #0b1220; border: 1px solid var(--border);
+    font-size: .93rem;
+  }
+  .bh-feedback.show { display: block; }
+  .bh-feedback .verdict { font-weight: 700; margin-bottom: .35rem; }
+  .wordbank { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0; }
+  .wordbank button {
+    font-family: var(--mono); font-size: .85rem;
+    border: 1px solid var(--border); background: var(--bg-elev2);
+    color: var(--text); border-radius: 8px; padding: .3rem .55rem; cursor: pointer;
+  }
+  .wordbank button:hover { border-color: var(--accent); }
+  .blank {
+    display: inline-block; min-width: 4rem; min-height: 1.2em;
+    border-bottom: 2px dashed var(--violet); margin: 0 .15rem;
+    font-family: var(--mono); color: var(--violet); text-align: center;
+    padding: 0 .35rem; vertical-align: baseline;
+  }
+  .blank.filled { border-bottom-style: solid; }
+  .wordbank .used { opacity: .35; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><!-- AUTHOR: short brand --> <span>Lesson</span></div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Lesson progress</span><span id="progressText">0%</span></div>
+    <div class="progress"><i id="progressBar"></i></div>
+  </div>
+  <div class="top-actions">
+    <button class="btn ghost" id="resetProgress" title="Clear section completion">Reset</button>
+    <button class="btn primary" id="nextSection">Next section →</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <h2>Modules</h2>
+    <nav class="nav" id="sideNav"><!-- AUTHOR: filled from section[data-sec] --></nav>
+    <h2 style="margin-top:1.25rem">Session score</h2>
+    <div id="sidebarScore" style="font-size:.9rem;color:var(--muted)">
+      Quizzes: <span id="quizHit">0</span>/<span id="quizTotal">0</span> correct
+    </div>
+  </aside>
+
+  <main>
+    <!-- ========== INTRO ========== -->
+    <section id="intro" data-sec="intro">
+      <div class="hero">
+        <!-- AUTHOR: h1 + lead + badges -->
+        <h1><!-- AUTHOR: Topic title --></h1>
+        <p class="lead"><!-- AUTHOR: 2–3 sentences — skill statement expanded, prior knowledge named --></p>
+        <div class="badges">
+          <span class="badge">Level: <!-- AUTHOR: Senior / Staff --></span>
+          <span class="badge ok">Interactive labs</span>
+          <span class="badge op">Opinionated</span>
+          <span class="badge q">Interview-ready</span>
+          <span class="badge">~90–150 min</span>
+        </div>
+        <div class="callout opinion">
+          <div class="label">Operating stance</div>
+          <p style="margin:0"><!-- AUTHOR: One paragraph: first principles before slogans; sources are drills; design decisions over trivia --></p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>What you will be able to do</h3>
+          <ul>
+            <!-- AUTHOR: 4–5 performance bullets tied to the skill statement -->
+            <li>…</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Assumed prior knowledge</h3>
+          <ul>
+            <!-- AUTHOR: What the learner should already know; look up the rest if missing -->
+            <li>…</li>
+          </ul>
+          <h3>How to use this lesson</h3>
+          <ol>
+            <li>Read a module, run its lab, answer the quiz.</li>
+            <li>Click <strong>Next section</strong> — progress is saved locally.</li>
+            <li>End with the interview drill and score yourself honestly.</li>
+            <li>Treat “I already know this” as the riskiest shortcut.</li>
+          </ol>
+          <p style="color:var(--muted);font-size:.9rem;margin-bottom:0">
+            Keyboard: <span class="kbd">N</span> next · <span class="kbd">P</span> prev
+          </p>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz="q-intro-1">
+        <h4>Warm-up · conceptual</h4>
+        <div class="q"><!-- AUTHOR: question --></div>
+        <div class="options">
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+          <button class="option" data-correct="true"><!-- AUTHOR --></button>
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+        </div>
+        <div class="explain"><strong>Correct intuition:</strong> <!-- AUTHOR --></div>
+      </div>
+    </section>
+
+    <!-- ========== MODULE TEMPLATE (duplicate per module) ==========
+         Pattern: first principle → compact model → analogy+ caveat → opinion
+         → lab from LABS.md → quiz(s)
+    -->
+    <section id="mod-1" data-sec="mod-1">
+      <h2 class="sec-title"><span class="tag">Module 1</span> <!-- AUTHOR --></h2>
+      <!-- AUTHOR: body -->
+
+      <!-- Lab slot: copy markup from LABS.md -->
+      <!--
+      <div class="lab" id="lab-...">
+        <h4>Lab · …</h4>
+        …
+      </div>
+      -->
+
+      <div class="quiz" data-quiz="q-m1-1">
+        <h4>Quiz · …</h4>
+        <div class="q"><!-- AUTHOR --></div>
+        <div class="options">
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+          <button class="option" data-correct="true"><!-- AUTHOR --></button>
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+        </div>
+        <div class="explain"><!-- AUTHOR --></div>
+      </div>
+    </section>
+
+    <!-- ========== BUG HUNT (required in every lesson) ========== -->
+    <section id="bug-hunt" data-sec="bug-hunt">
+      <h2 class="sec-title"><span class="tag">Bug hunt</span> Subtle failure</h2>
+      <p style="color:var(--muted)">
+        Find what is wrong without retyping the code. Use hints if stuck; free-text is optional.
+      </p>
+
+      <div class="bughunt" data-bug="bh1"
+           data-keywords="word1,word2,word3"
+           data-accept="accept-sentence-fragment"
+           data-hint1="Concept name to recall"
+           data-hint2="Where to look in the snippet"
+           data-hint3="First principle that kills this bug"
+           data-explanation="Authoritative one-paragraph explanation">
+        <h4>Bug hunt 1</h4>
+        <div class="bh-meta"><!-- AUTHOR: context — one line --></div>
+        <pre><code><!-- AUTHOR: subtle bug snippet (short, decision-level comments) --></code></pre>
+
+        <!-- Mode A: MCQ — set data-bug-mode="mcq" on .bughunt, one data-correct="true" -->
+        <div class="options" data-bh-choices>
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+          <button class="option" data-correct="true"><!-- AUTHOR --></button>
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+        </div>
+
+        <!-- Mode B alternative: click-the-line — set data-bug-mode="click", each line data-line-id + data-bug-line="true" on the buggy one
+        <div class="bh-lines" data-bh-lines>
+          <div class="bh-line clickable" data-line-id="l1" data-bug-line="false">…</div>
+          <div class="bh-line clickable" data-line-id="l2" data-bug-line="true">…</div>
+        </div>
+        -->
+      </div>
+    </section>
+
+    <!-- ========== MORE MODULES … ========== -->
+
+    <!-- ========== MYTH GRID ========== -->
+    <section id="myths" data-sec="myths">
+      <h2 class="sec-title"><span class="tag">Sources</span> Folklore vs model</h2>
+      <!-- AUTHOR: 4–6 myths — verdict folk / partial / real -->
+      <div class="myth-grid" id="mythGrid">
+        <div class="myth open">
+          <button class="head"><span><!-- AUTHOR claim --></span><span class="verdict folk">Folk model</span></button>
+          <div class="body"><p><!-- AUTHOR upgrade to first principles --></p></div>
+        </div>
+        <div class="myth">
+          <button class="head"><span><!-- AUTHOR --></span><span class="verdict real">Holds</span></button>
+          <div class="body"><p><!-- AUTHOR --></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== DECISION LADDER ========== -->
+    <section id="patterns" data-sec="patterns">
+      <h2 class="sec-title"><span class="tag">Patterns</span> Production defaults</h2>
+      <div class="card">
+        <h3>Decision ladder</h3>
+        <div class="decision-tree" id="decisionTree">
+          <!-- AUTHOR: 4–6 steps: question → default answer -->
+          <div class="decision-step">
+            <div class="q">1. …</div>
+            <div class="a">…</div>
+          </div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz="q-pat-1">
+        <h4>Quiz · defaults</h4>
+        <div class="q"><!-- AUTHOR --></div>
+        <div class="options">
+          <button class="option" data-correct="true"><!-- AUTHOR --></button>
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+        </div>
+        <div class="explain"><!-- AUTHOR --></div>
+      </div>
+    </section>
+
+    <!-- ========== DRILL ========== -->
+    <section id="drill" data-sec="drill">
+      <h2 class="sec-title"><span class="tag">Drill</span> Interview questions</h2>
+      <div class="scoreboard">
+        <div class="stat"><div class="v" id="drillScore">0</div><div class="l">Correct</div></div>
+        <div class="stat"><div class="v" id="drillDone">0</div><div class="l">Answered</div></div>
+        <div class="stat"><div class="v" id="drillPct">—</div><div class="l">Accuracy</div></div>
+      </div>
+      <p style="color:var(--muted)">
+        Answer aloud before revealing. A wrong answer with good reasoning beats a memorized paragraph you cannot defend.
+      </p>
+
+      <!-- AUTHOR: 6–10 drill quizzes, ids start with d (data-quiz="d1" …) -->
+      <div class="quiz" data-quiz="d1">
+        <h4>Drill 1 · …</h4>
+        <div class="q"><!-- AUTHOR --></div>
+        <div class="options">
+          <button class="option" data-correct="true"><!-- AUTHOR --></button>
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+          <button class="option" data-correct="false"><!-- AUTHOR --></button>
+        </div>
+        <div class="explain"><!-- AUTHOR --></div>
+      </div>
+    </section>
+
+    <!-- ========== CHEATSHEET ========== -->
+    <section id="cheatsheet" data-sec="cheatsheet">
+      <h2 class="sec-title"><span class="tag">Cheatsheet</span> Compact model</h2>
+
+      <div class="card">
+        <h3>Rules worth memorizing</h3>
+        <div class="notebook">
+          <ul class="checklist" id="rulesChecklist">
+            <!-- AUTHOR: 6–10 one-line rules -->
+            <li><input type="checkbox" data-cb="r1" /> …</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Flashcards</h3>
+          <div class="lab" style="margin:0">
+            <div class="flash" id="flashcard">
+              <div class="front" id="flashFront">…</div>
+              <div class="back" id="flashBack">…</div>
+            </div>
+            <div class="lab-controls" style="margin-bottom:0">
+              <button class="btn primary" id="flashFlip">Flip</button>
+              <button class="btn" id="flashNext">Next card</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Self-score</h3>
+          <p>Tick only what you could defend with a whiteboard example.</p>
+          <div class="notebook">
+            <ul class="checklist" id="selfChecklist">
+              <li><input type="checkbox" data-cb="s1" /> <!-- AUTHOR --></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout good">
+        <div class="label">Exit criteria</div>
+        <p style="margin:0">
+          You are interview-ready when you stop quoting slogans and answer
+          <em>“what did this design fail to account for?”</em>
+          with a model you can draw under pressure.
+        </p>
+      </div>
+
+      <footer>
+        <!-- AUTHOR: optional source note — sources are drills, not scripture -->
+        Built for senior interview prep. Related material is a drill, not a bible.
+        <br/><br/>
+        Progress and quiz state are stored in your browser only (localStorage).
+      </footer>
+    </section>
+  </main>
+</div>
+
+<script>
+  // AUTHOR: flashcards — set before main script if possible:
+  // window.LESSON_FLASHCARDS = [{ f: "...", b: "..." }];
+</script>
+<script>
+(() => {
+  const lessonKey = (document.title || "lesson")
+    .replace(/[^\w]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+  const STORAGE_KEY = "interactive-lesson::" + lessonKey;
+  const state = load();
+
+  function load() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { sections: {}, quizzes: {}, checklist: {}, bug: {} };
+    } catch {
+      return { sections: {}, quizzes: {}, checklist: {}, bug: {} };
+    }
+  }
+  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+  // Build nav from DOM (single source of truth: section[data-sec])
+  const sectionEls = [...document.querySelectorAll("main section[data-sec]")];
+  const sections = sectionEls.map(el => el.getAttribute("data-sec"));
+  const nav = document.getElementById("sideNav");
+  nav.innerHTML = sections.map((id, i) => {
+    const title = (sectionEls[i].querySelector(".sec-title, h1")?.textContent || id).trim().slice(0, 48);
+    return `<a href="#${id}" data-sec="${id}"><span class="dot"></span><span class="num">${String(i).padStart(2,"0")}</span> ${title}</a>`;
+  }).join("");
+  const navLinks = [...nav.querySelectorAll("a")];
+
+  function markSection(id) {
+    if (!id) return;
+    state.sections[id] = true;
+    save();
+    paintProgress();
+  }
+
+  function paintProgress() {
+    const done = sections.filter(id => state.sections[id]).length;
+    const pct = sections.length ? Math.round((done / sections.length) * 100) : 0;
+    document.getElementById("progressBar").style.width = pct + "%";
+    document.getElementById("progressText").textContent = pct + "%";
+    navLinks.forEach(a => {
+      a.classList.toggle("done", !!state.sections[a.getAttribute("data-sec")]);
+    });
+    let hit = 0, total = 0;
+    document.querySelectorAll(".quiz").forEach(q => {
+      const rec = state.quizzes[q.getAttribute("data-quiz")];
+      if (!rec) return;
+      total++;
+      if (rec.correct) hit++;
+    });
+    document.getElementById("quizHit").textContent = String(hit);
+    document.getElementById("quizTotal").textContent = String(total);
+  }
+
+  navLinks.forEach(a => a.addEventListener("click", () => markSection(a.getAttribute("data-sec"))));
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const id = e.target.getAttribute("data-sec");
+      navLinks.forEach(l => l.classList.toggle("active", l.getAttribute("data-sec") === id));
+    });
+  }, { threshold: 0.35 });
+  sectionEls.forEach(el => io.observe(el));
+
+  function currentSection() {
+    return document.querySelector("#sideNav a.active")?.getAttribute("data-sec") || sections[0];
+  }
+
+  document.getElementById("nextSection").addEventListener("click", () => {
+    const cur = currentSection();
+    markSection(cur);
+    const idx = sections.indexOf(cur);
+    const next = sections[Math.min(sections.length - 1, idx + 1)];
+    const el = document.getElementById(next);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      markSection(next);
+    }
+  });
+
+  document.getElementById("resetProgress").addEventListener("click", () => {
+    if (!confirm("Clear all lesson progress and quiz state?")) return;
+    state.sections = {}; state.quizzes = {}; state.checklist = {}; state.bug = {};
+    save();
+    document.querySelectorAll(".quiz .option, .bughunt .option").forEach(b => {
+      b.disabled = false;
+      b.classList.remove("correct", "wrong", "picked", "flagged-bad", "flagged-good");
+    });
+    document.querySelectorAll(".explain, .bh-feedback, .bh-hint").forEach(e => e.classList.remove("show"));
+    document.querySelectorAll("input[data-cb]").forEach(c => c.checked = false);
+    document.querySelectorAll(".bh-line").forEach(l => l.classList.remove("picked", "flagged-bad", "flagged-good"));
+    paintProgress();
+    updateDrillScore();
+  });
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // ===== Quizzes: runtime option shuffle (author must not rely on position) =====
+  document.querySelectorAll(".quiz").forEach(quiz => {
+    const id = quiz.getAttribute("data-quiz");
+    const optionsWrap = quiz.querySelector(".options");
+    const explain = quiz.querySelector(".explain");
+    let options = [...quiz.querySelectorAll(".option")];
+
+    // Shuffle on load so correct answer is not always A/B/C in source order
+    if (optionsWrap && options.length > 1) {
+      shuffle(options).forEach(opt => optionsWrap.appendChild(opt));
+    }
+    options = [...quiz.querySelectorAll(".option")];
+
+    function reveal(selected, correct) {
+      options.forEach(opt => {
+        opt.disabled = true;
+        if (opt.getAttribute("data-correct") === "true") opt.classList.add("correct");
+        if (opt === selected && !correct) opt.classList.add("wrong");
+      });
+      if (explain) explain.classList.add("show");
+      state.quizzes[id] = {
+        correct,
+        selected: selected ? selected.textContent.trim().slice(0, 80) : null
+      };
+      save();
+      const sec = quiz.closest("section");
+      if (sec) markSection(sec.getAttribute("data-sec"));
+      updateDrillScore();
+      paintProgress();
+    }
+
+    const prev = state.quizzes[id];
+    if (prev) {
+      options.forEach(opt => {
+        opt.disabled = true;
+        if (opt.getAttribute("data-correct") === "true") opt.classList.add("correct");
+      });
+      if (explain) explain.classList.add("show");
+    }
+
+    options.forEach(opt => {
+      opt.addEventListener("click", () => {
+        if (opt.disabled) return;
+        reveal(opt, opt.getAttribute("data-correct") === "true");
+      });
+    });
+  });
+
+  function updateDrillScore() {
+    let correct = 0, done = 0;
+    document.querySelectorAll(".quiz[data-quiz^='d']").forEach(q => {
+      const rec = state.quizzes[q.getAttribute("data-quiz")];
+      if (!rec) return;
+      done++;
+      if (rec.correct) correct++;
+    });
+    document.getElementById("drillScore").textContent = String(correct);
+    document.getElementById("drillDone").textContent = String(done);
+    document.getElementById("drillPct").textContent = done ? Math.round((correct / done) * 100) + "%" : "—";
+  }
+
+  // ===== Bug hunt: MCQ or click-line + keyword rubric + hint ladder =====
+  document.querySelectorAll(".bughunt").forEach(bh => {
+    const bugId = bh.getAttribute("data-bug") || Math.random().toString(36).slice(2);
+    const mode = bh.getAttribute("data-bug-mode") || (bh.querySelector("[data-bh-choices]") ? "mcq" : "click");
+    const keywords = (bh.getAttribute("data-keywords") || "").split(",").map(s => s.trim()).filter(Boolean);
+    const accept = (bh.getAttribute("data-accept") || "").toLowerCase();
+    const explanation = bh.getAttribute("data-explanation") || "";
+    const feedback = document.createElement("div");
+    feedback.className = "bh-feedback";
+    bh.appendChild(feedback);
+
+    // Hint ladder
+    const hintWrap = document.createElement("div");
+    hintWrap.className = "bh-hints";
+    [1,2,3].forEach(n => {
+      const text = bh.getAttribute("data-hint" + n);
+      if (!text) return;
+      const btn = document.createElement("button");
+      btn.className = "btn";
+      btn.textContent = "Hint " + n;
+      const div = document.createElement("div");
+      div.className = "bh-hint";
+      div.textContent = text;
+      hintWrap.appendChild(btn);
+      bh.insertBefore(div, feedback);
+      btn.addEventListener("click", () => {
+        div.classList.add("show");
+        btn.disabled = true;
+      });
+    });
+    // insert hint controls after choices/lines
+    const anchor = bh.querySelector("[data-bh-choices], [data-bh-lines], pre") || bh;
+    bh.insertBefore(hintWrap, feedback);
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "bh-explain";
+    textarea.placeholder = "One sentence (optional): what is wrong and why?";
+    bh.insertBefore(textarea, feedback);
+
+    const checkBtn = document.createElement("button");
+    checkBtn.className = "btn primary";
+    checkBtn.textContent = "Check answer";
+    checkBtn.style.marginTop = ".55rem";
+    bh.insertBefore(checkBtn, feedback);
+
+    function rubricScore(text) {
+      const t = (text || "").toLowerCase();
+      if (!t) return { score: 0, hits: [], missing: keywords };
+      const hits = keywords.filter(k => t.includes(k.toLowerCase()));
+      const acceptHit = accept && t.includes(accept);
+      return { score: hits.length + (acceptHit ? 1 : 0), hits, missing: keywords.filter(k => !hits.includes(k)), acceptHit };
+    }
+
+    function gradeVerbally(ok, mcqCorrect, rubric) {
+      const parts = [];
+      if (mode === "mcq" || mode === "click") {
+        parts.push(mcqCorrect
+          ? "<span class='verdict ok'>Verdict: correct.</span>"
+          : "<span class='verdict no'>Verdict: not yet.</span>");
+      } else {
+        parts.push(rubric.score > 0
+          ? "<span class='verdict ok'>Rubric: hits.</span>"
+          : "<span class='verdict no'>Rubric: no keywords matched.</span>");
+      }
+      if (rubric.missing.length) {
+        parts.push("<div>Key concepts in a complete answer: <strong>" + rubric.missing.join(", ") + "</strong></div>");
+      }
+      if (explanation) {
+        parts.push("<div style='margin-top:.4rem'><strong>Explanation:</strong> " + explanation + "</div>");
+      }
+      return parts.join("");
+    }
+
+    let selectedOpt = null;
+    let selectedLine = null;
+
+    if (mode === "mcq") {
+      const opts = [...bh.querySelectorAll("[data-bh-choices] .option")];
+      shuffle(opts).forEach(o => o.parentElement.appendChild(o));
+      opts.forEach(opt => {
+        opt.addEventListener("click", () => {
+          if (opt.disabled) return;
+          selectedOpt = opt;
+          opts.forEach(o => o.classList.remove("picked"));
+          opt.classList.add("picked");
+        });
+      });
+    } else {
+      const lines = [...bh.querySelectorAll("[data-bh-lines] .bh-line")];
+      lines.forEach(line => {
+        if (line.getAttribute("data-bug-line") === "true" || line.dataset.bugLine === "true") {
+          line.classList.add("clickable");
+        } else {
+          line.classList.add("clickable"); // allow picking any line; grade on match
+        }
+        line.addEventListener("click", () => {
+          if (feedback.classList.contains("locked")) return;
+          lines.forEach(l => l.classList.remove("picked"));
+          line.classList.add("picked");
+          selectedLine = line;
+        });
+      });
+    }
+
+    checkBtn.addEventListener("click", () => {
+      const text = textarea.value.trim();
+      const rubric = rubricScore(text);
+      let mcqCorrect = false;
+
+      if (mode === "mcq") {
+        if (!selectedOpt) {
+          feedback.innerHTML = "<span class='verdict meh'>Pick an option first (hints welcome).</span>";
+          feedback.classList.add("show");
+          return;
+        }
+        mcqCorrect = selectedOpt.getAttribute("data-correct") === "true";
+        [...bh.querySelectorAll("[data-bh-choices] .option")].forEach(o => {
+          o.disabled = true;
+          if (o.getAttribute("data-correct") === "true") o.classList.add("flagged-good");
+          else if (o === selectedOpt) o.classList.add("flagged-bad");
+        });
+      } else if (mode === "click") {
+        if (!selectedLine) {
+          feedback.innerHTML = "<span class='verdict meh'>Click the line you believe is wrong.</span>";
+          feedback.classList.add("show");
+          return;
+        }
+        mcqCorrect = selectedLine.getAttribute("data-bug-line") === "true";
+        [...bh.querySelectorAll("[data-bh-lines] .bh-line")].forEach(l => {
+          if (l.getAttribute("data-bug-line") === "true") l.classList.add("flagged-good");
+          else if (l === selectedLine) l.classList.add("flagged-bad");
+        });
+      }
+
+      const verbalOk = mcqCorrect || (keywords.length > 0 && rubric.score >= Math.max(1, Math.ceil(keywords.length * 0.4)));
+      feedback.innerHTML = gradeVerbally(verbalOk, mcqCorrect, rubric) +
+        (text ? "" : "<div style='margin-top:.4rem;color:var(--muted)'>Optional prose empty — MCQ/click still counts.</div>");
+      feedback.classList.add("show");
+      checkBtn.disabled = true;
+      textarea.disabled = true;
+
+      state.bug[bugId] = { correct: verbalOk || mcqCorrect, text: text.slice(0, 200) };
+      save();
+      const sec = bh.closest("section");
+      if (sec) markSection(sec.getAttribute("data-sec"));
+      paintProgress();
+    });
+
+    const prevBug = state.bug[bugId];
+    if (prevBug) {
+      // do not auto-disable: allow retry after Reset; leave interactive
+    }
+  });
+
+  // ===== Generic scenario picker (optional) =====
+  // Author markup:
+  // AUTHOR: generic scenario lab — JSON payload on data-scenario-lab (see LABS.md §3)
+  document.querySelectorAll("[data-scenario-lab]").forEach(lab => {
+    let scenarios = [];
+    try { scenarios = JSON.parse(lab.getAttribute("data-scenario-lab") || "[]"); } catch { return; }
+    if (!scenarios.length) return;
+    let idx = 0;
+    const out = document.createElement("div");
+    out.className = "outcome";
+    out.textContent = "Pick an option to see the verdict.";
+    lab.appendChild(out);
+
+    function paint() {
+      const sc = scenarios[idx];
+      let html = "<div class='decision-step'><div class='q'>" + (idx+1) + "/" + scenarios.length + " · " + sc.q + "</div></div>";
+      const prev = lab.querySelector(".scenario-live");
+      if (prev) prev.remove();
+      const live = document.createElement("div");
+      live.className = "scenario-live";
+      live.innerHTML = html;
+      lab.insertBefore(live, lab.querySelector(".lab-controls") || out);
+      out.textContent = "Pick an option to see the verdict.";
+    }
+
+    let controls = lab.querySelector(".lab-controls");
+    if (!controls) {
+      controls = document.createElement("div");
+      controls.className = "lab-controls";
+      lab.insertBefore(controls, out);
+    }
+    // author provides option buttons with data-sc-index + data-sc-best + data-sc-verdict
+    // OR we generate from JSON
+    controls.innerHTML = "";
+    scenarios[0] && scenarios[0].options.forEach((opt, oi) => {
+      const b = document.createElement("button");
+      b.className = "btn" + (oi === 0 ? " primary" : "");
+      b.textContent = opt.label;
+      b.addEventListener("click", () => {
+        const sc = scenarios[idx];
+        const chosen = sc.options[oi];
+        out.innerHTML = chosen.best
+          ? "<span class='ok'>" + (chosen.verdict || "Best match.") + "</span>"
+          : "<span class='no'>" + (chosen.verdict || "Not the best default.") + "</span> Best: " +
+            (sc.options.find(o => o.best)?.label || "—");
+      });
+      controls.appendChild(b);
+    });
+    const prevB = document.createElement("button");
+    prevB.className = "btn"; prevB.textContent = "← Prev";
+    const nextB = document.createElement("button");
+    nextB.className = "btn"; nextB.textContent = "Next →";
+    prevB.addEventListener("click", () => { idx = (idx - 1 + scenarios.length) % scenarios.length; paint(); });
+    nextB.addEventListener("click", () => { idx = (idx + 1) % scenarios.length; paint(); });
+    controls.appendChild(prevB); controls.appendChild(nextB);
+    paint();
+  });
+
+  // ===== Myth grid =====
+  document.querySelectorAll(".myth .head").forEach(head => {
+    head.addEventListener("click", () => head.parentElement.classList.toggle("open"));
+  });
+
+  // ===== Checklists =====
+  document.querySelectorAll("input[data-cb]").forEach(cb => {
+    const key = cb.getAttribute("data-cb");
+    cb.checked = !!state.checklist[key];
+    cb.addEventListener("change", () => {
+      state.checklist[key] = cb.checked;
+      save();
+      const sec = cb.closest("section");
+      if (sec) markSection(sec.getAttribute("data-sec"));
+    });
+  });
+
+  // ===== Flashcards (author may rewrite cards via JS array below) =====
+  // Replace the default cards array when authoring.
+  const cards = (Array.isArray(window.LESSON_FLASHCARDS) && window.LESSON_FLASHCARDS.length)
+    ? window.LESSON_FLASHCARDS
+    : [{ f: "Flashcard front", b: "Flashcard back" }];
+  let cardIdx = 0;
+  const flash = document.getElementById("flashcard");
+  function paintCard() {
+    if (!flash) return;
+    flash.classList.remove("flipped");
+    document.getElementById("flashFront").textContent = cards[cardIdx].f;
+    document.getElementById("flashBack").textContent = cards[cardIdx].b;
+  }
+  document.getElementById("flashFlip")?.addEventListener("click", () => flash.classList.toggle("flipped"));
+  document.getElementById("flashNext")?.addEventListener("click", () => {
+    cardIdx = (cardIdx + 1) % cards.length;
+    paintCard();
+  });
+  paintCard();
+
+  document.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, textarea, select")) return;
+    if (e.key === "n" || e.key === "N") document.getElementById("nextSection").click();
+    if (e.key === "p" || e.key === "P") {
+      const idx = sections.indexOf(currentSection());
+      const prev = sections[Math.max(0, idx - 1)];
+      document.getElementById(prev)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+
+  markSection("intro");
+  paintProgress();
+  updateDrillScore();
+})();
+</script>
+</body>
+</html>
