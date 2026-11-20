@@ -26,6 +26,7 @@ Copilot skills.
 - **ps-contribution-critique** — Advisory, local-only critique of finished implementations against repo conventions, minimal integration, simplification, and historic-language cleanup.
 - **ps-contribution-package** — Packages an approved critique into local-only issue drafts and a first-time-maintainer PR description without creating remote artifacts.
 - **ps-swarm-issue-delivery** — Delivers `Ready` GitHub issues through `swarm-orchestrator` with reviewed plans, PR review mode, and proof-based closure.
+- **ps-cv-tailor** — Tailors a final CV to one job offer with at most 5 keyword edits (rename, reorder, add to Skills); a checker rejects words found in neither the CV nor the offer.
 - **rs-onboarding-pages-docs** — Turns screenshots, rollout notes, and implementation evidence into onboarding-focused static documentation pages.
 
 ### `scripts/`

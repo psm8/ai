@@ -56,6 +56,7 @@ skg psm8/ai -s ps-anti-ai-slop-code-review
 skg psm8/ai -s ps-contribution-critique  # (dependency)
 skg psm8/ai -s ps-autoloop
 skg psm8/ai -s ps-contribution-package  # (dependency)
+skg psm8/ai -s ps-cv-tailor
 skg psm8/ai -s ps-github-issue-lifecycle
 skg psm8/ai -s ps-swarm-issue-delivery  # (dependency)
 skg psm8/ai -s ps-jira-writing-style
