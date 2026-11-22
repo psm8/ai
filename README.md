@@ -17,15 +17,24 @@ Git hooks for automation.
 Configured via `git config core.hooksPath .githooks`.
 
 ### `skills/`
-Copilot skills.
+Agent skills (Claude Code, GitHub Copilot, Factory Droid), installed with `npx skills add psm8/ai --skill <name>`.
 
 **Available skills:**
 
-- **ps-github-issue-lifecycle** — Manages a GitHub issue from triage to close using Issues, Projects V2, PR linkage, and safe close or reopen decisions.
-- **ps-jira-writing-style** — Writes Jira comments and updates in the user's internal team style while preserving technical wording.
+Code review and delivery:
+- **ps-anti-ai-slop-code-review** — Multi-skill backend code review (contribution critique, SOLID, anti-slop detection) of an MR or local diff for merge-readiness and AI-slop removal. Read-only; outputs a detailed report and a paste-ready sum-up.
 - **ps-contribution-critique** — Advisory, local-only critique of finished implementations against repo conventions, minimal integration, simplification, and historic-language cleanup.
 - **ps-contribution-package** — Packages an approved critique into local-only issue drafts and a first-time-maintainer PR description without creating remote artifacts.
+- **ps-autoloop** — Picks up open unclaimed issues, bundles related ones into one branch/MR, and runs independent ones in parallel with subagents.
+
+Issue workflow:
+- **ps-github-issue-lifecycle** — Manages a GitHub issue from triage to close using Issues, Projects V2, PR linkage, and safe close or reopen decisions.
 - **ps-swarm-issue-delivery** — Delivers `Ready` GitHub issues through `swarm-orchestrator` with reviewed plans, PR review mode, and proof-based closure.
+
+Writing and learning:
+- **ps-jira-writing-style** — Writes Jira comments and updates in the user's internal team style while preserving technical wording.
+- **ps-simple-short-analogy** — Answers a problem with one short everyday analogy instead of a detailed breakdown.
+- **create-interactive-lesson** (`skills/ps-create-interactive-lesson/`) — Creates one self-contained interactive HTML lesson on a programming topic for senior interview prep.
 - **rs-onboarding-pages-docs** — Turns screenshots, rollout notes, and implementation evidence into onboarding-focused static documentation pages.
 
 ### `scripts/`
