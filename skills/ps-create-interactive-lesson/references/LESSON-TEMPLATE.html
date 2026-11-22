@@ -1020,28 +1020,35 @@
     // author provides option buttons with data-sc-index + data-sc-best + data-sc-verdict
     // OR we generate from JSON
     controls.innerHTML = "";
-    scenarios[0] && scenarios[0].options.forEach((opt, oi) => {
-      const b = document.createElement("button");
-      b.className = "btn" + (oi === 0 ? " primary" : "");
-      b.textContent = opt.label;
-      b.addEventListener("click", () => {
-        const sc = scenarios[idx];
-        const chosen = sc.options[oi];
-        out.innerHTML = chosen.best
-          ? "<span class='ok'>" + (chosen.verdict || "Best match.") + "</span>"
-          : "<span class='no'>" + (chosen.verdict || "Not the best default.") + "</span> Best: " +
-            (sc.options.find(o => o.best)?.label || "—");
+    // Option buttons are rebuilt per scenario: scenarios may have different options.
+    const optsWrap = document.createElement("span");
+    optsWrap.style.display = "contents";
+    controls.appendChild(optsWrap);
+    function buildOpts() {
+      optsWrap.innerHTML = "";
+      scenarios[idx].options.forEach((opt, oi) => {
+        const b = document.createElement("button");
+        b.className = "btn";
+        b.textContent = opt.label;
+        b.addEventListener("click", () => {
+          const sc = scenarios[idx];
+          const chosen = sc.options[oi];
+          out.innerHTML = chosen.best
+            ? "<span class='ok'>" + (chosen.verdict || "Best match.") + "</span>"
+            : "<span class='no'>" + (chosen.verdict || "Not the best default.") + "</span> Best: " +
+              (sc.options.find(o => o.best)?.label || "—");
+        });
+        optsWrap.appendChild(b);
       });
-      controls.appendChild(b);
-    });
+    }
     const prevB = document.createElement("button");
     prevB.className = "btn"; prevB.textContent = "← Prev";
     const nextB = document.createElement("button");
     nextB.className = "btn"; nextB.textContent = "Next →";
-    prevB.addEventListener("click", () => { idx = (idx - 1 + scenarios.length) % scenarios.length; paint(); });
-    nextB.addEventListener("click", () => { idx = (idx + 1) % scenarios.length; paint(); });
+    prevB.addEventListener("click", () => { idx = (idx - 1 + scenarios.length) % scenarios.length; paint(); buildOpts(); });
+    nextB.addEventListener("click", () => { idx = (idx + 1) % scenarios.length; paint(); buildOpts(); });
     controls.appendChild(prevB); controls.appendChild(nextB);
-    paint();
+    paint(); buildOpts();
   });
 
   // ===== Myth grid =====
